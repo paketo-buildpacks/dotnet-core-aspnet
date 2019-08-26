@@ -18,6 +18,5 @@ stacks = ["org.cloudfoundry.stacks.cflinuxfs3"]
 uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore.2.2.6.linux-amd64-cflinuxfs3-9c578eee.tar.xz"
 version = "2.2.6"
 
-
 [[stacks]]
 id = "org.cloudfoundry.stacks.cflinuxfs3"
