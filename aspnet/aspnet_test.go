@@ -2,6 +2,7 @@ package aspnet
 
 import (
 	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
+	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
@@ -21,7 +22,7 @@ func testDotnet(t *testing.T, when spec.G, it spec.S) {
 		factory     *test.BuildFactory
 		stubDotnetAspnetFixture = filepath.Join("testdata", "stub-dotnet-aspnet.tar.xz")
 		symlinkPath string
-
+		symlinkLayer layers.Layer
 	)
 
 	it.Before(func() {
@@ -30,6 +31,7 @@ func testDotnet(t *testing.T, when spec.G, it spec.S) {
 		RegisterTestingT(t)
 		factory = test.NewBuildFactory(t)
 		factory.AddDependency(DotnetAspNet, stubDotnetAspnetFixture)
+		symlinkLayer = factory.Build.Layers.Layer("aspnetRuntime")
 
 		symlinkPath, err = ioutil.TempDir(os.TempDir(), "runtime")
 		Expect(err).ToNot(HaveOccurred())
@@ -59,7 +61,7 @@ func testDotnet(t *testing.T, when spec.G, it spec.S) {
 	})
 
 	when("Contribute", func() {
-		it("installs the aspnet dependency", func() {
+		it("installs the aspnet dependency, writes dotnet root", func() {
 			factory.AddPlan(buildpackplan.Plan{Name: DotnetAspNet})
 
 			dotnetASPNetContributor, _, err := NewContributor(factory.Build)
@@ -69,6 +71,7 @@ func testDotnet(t *testing.T, when spec.G, it spec.S) {
 
 			layer := factory.Build.Layers.Layer(DotnetAspNet)
 			Expect(filepath.Join(layer.Root, "stub-dir", "stub.txt")).To(BeARegularFile())
+			Expect(symlinkLayer).To(test.HaveOverrideSharedEnvironment("DOTNET_ROOT", symlinkLayer.Root))
 		})
 
 		it("uses the default version when a version is not requested", func() {
