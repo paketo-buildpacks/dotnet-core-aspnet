@@ -31,7 +31,7 @@ func testDotnet(t *testing.T, when spec.G, it spec.S) {
 		RegisterTestingT(t)
 		factory = test.NewBuildFactory(t)
 		factory.AddDependency(DotnetAspNet, stubDotnetAspnetFixture)
-		symlinkLayer = factory.Build.Layers.Layer("aspnetRuntime")
+		symlinkLayer = factory.Build.Layers.Layer("aspnet-symlinks")
 
 		symlinkPath, err = ioutil.TempDir(os.TempDir(), "runtime")
 		Expect(err).ToNot(HaveOccurred())

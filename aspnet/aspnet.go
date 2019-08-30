@@ -13,11 +13,11 @@ import (
 const DotnetAspNet = "dotnet-aspnet"
 
 type Contributor struct {
-	context      build.Build
-	plan         buildpackplan.Plan
-	aspnetLayer layers.DependencyLayer
-	aspnetRuntimeLayer layers.Layer
-	logger       logger.Logger
+	context            build.Build
+	plan               buildpackplan.Plan
+	aspnetLayer        layers.DependencyLayer
+	aspnetSymlinkLayer layers.Layer
+	logger             logger.Logger
 }
 
 func NewContributor(context build.Build) (Contributor, bool, error) {
@@ -36,11 +36,11 @@ func NewContributor(context build.Build) (Contributor, bool, error) {
 
 
 	return Contributor{
-		context:      context,
-		plan:         plan,
-		aspnetLayer: context.Layers.DependencyLayer(dep),
-		aspnetRuntimeLayer: context.Layers.Layer("aspnetRuntime"),
-		logger:       context.Logger,
+		context:            context,
+		plan:               plan,
+		aspnetLayer:        context.Layers.DependencyLayer(dep),
+		aspnetSymlinkLayer: context.Layers.Layer("aspnet-symlinks"),
+		logger:             context.Logger,
 	}, true, nil
 }
 
@@ -59,7 +59,7 @@ func (c Contributor) Contribute() error {
 		return err
 	}
 
-	err = c.aspnetRuntimeLayer.Contribute(c.context.Buildpack, func(layer layers.Layer) error {
+	err = c.aspnetSymlinkLayer.Contribute(c.context.Buildpack, func(layer layers.Layer) error {
 		pathToRuntime := os.Getenv("DOTNET_ROOT")
 		runtimeFiles, err := filepath.Glob(filepath.Join(pathToRuntime, "shared", "*"))
 		for _, file := range runtimeFiles {
