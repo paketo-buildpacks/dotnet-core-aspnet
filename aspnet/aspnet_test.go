@@ -1,6 +1,7 @@
 package aspnet
 
 import (
+	"fmt"
 	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/test"
@@ -30,7 +31,7 @@ func testDotnet(t *testing.T, when spec.G, it spec.S) {
 
 		RegisterTestingT(t)
 		factory = test.NewBuildFactory(t)
-		factory.AddDependency(DotnetAspNet, stubDotnetAspnetFixture)
+		factory.AddDependencyWithVersion(DotnetAspNet, "2.2.5", stubDotnetAspnetFixture)
 		symlinkLayer = factory.Build.Layers.Layer("aspnet-symlinks")
 
 		symlinkPath, err = ioutil.TempDir(os.TempDir(), "runtime")
@@ -45,18 +46,43 @@ func testDotnet(t *testing.T, when spec.G, it spec.S) {
 	})
 
 	when("runtime.NewContributor", func() {
-		it("returns true if a build plan exists", func() {
-			factory.AddPlan(buildpackplan.Plan{Name: DotnetAspNet})
+		when("when there is no buildpack.yml", func () {
+			it("returns true if a build plan exists and matching version is found", func() {
+				factory.AddPlan(buildpackplan.Plan{Name: DotnetAspNet, Version: "2.2.5"})
 
-			_, willContribute, err := NewContributor(factory.Build)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(willContribute).To(BeTrue())
+				_, willContribute, err := NewContributor(factory.Build)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(willContribute).To(BeTrue())
+			})
+
+			it("returns true if a build plan exists and no matching version is found", func() {
+				factory.AddPlan(buildpackplan.Plan{Name: DotnetAspNet, Version: "1.0.0"})
+
+				_, willContribute, err := NewContributor(factory.Build)
+				Expect(err).To(HaveOccurred())
+				Expect(willContribute).To(BeFalse())
+			})
+		})
+
+		when("when there is a buildpack.yml", func () {
+			it("returns roll forward from buildpack.yml", func() {
+				factory.AddPlan(buildpackplan.Plan{Name: DotnetAspNet, Version: "2.0.0"})
+				factory.AddDependencyWithVersion(DotnetAspNet, "2.1.0", stubDotnetAspnetFixture)
+				test.WriteFile(t, filepath.Join(factory.Build.Application.Root, "buildpack.yml"), fmt.Sprintf("dotnet-runtime:\n  version: %s", "2.2.0"))
+				defer os.RemoveAll(filepath.Join(factory.Build.Application.Root, "buildpack.yml"))
+
+				contributor, willContribute, err := NewContributor(factory.Build)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(willContribute).To(BeTrue())
+				Expect(contributor.aspnetLayer.Dependency.Version.String()).To(Equal("2.2.5"))
+			})
 		})
 
 		it("returns false if a build plan does not exist", func() {
-			_, willContribute, err := NewContributor(factory.Build)
+			contributor, willContribute, err := NewContributor(factory.Build)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(willContribute).To(BeFalse())
+			Expect(contributor).To(Equal(Contributor{}))
 		})
 	})
 

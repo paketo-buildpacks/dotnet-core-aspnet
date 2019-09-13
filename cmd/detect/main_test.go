@@ -1,9 +1,6 @@
 package main
 
 import (
-
-	"errors"
-	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
@@ -110,7 +107,7 @@ version = "2.2.5"
 			}))
 		})
 
-		it("passes with no require when there is a valid runtimeconfig.json where there is a specified version Microsoft.NETCore.App", func() {
+		it("passes with no require when there is a valid runtimeconfig.json where there is not a specified version Microsoft.NETCore.App/All", func() {
 			runtimeConfigJSONPath := filepath.Join(factory.Detect.Application.Root, "appName.runtimeconfig.json")
 			Expect(ioutil.WriteFile(runtimeConfigJSONPath, []byte(`
 {
@@ -131,83 +128,6 @@ version = "2.2.5"
 			}))
 		})
 
-		it("passes when there is a valid runtimeconfig.json where the specified minor is provided", func() {
-			runtimeConfigJSONPath := filepath.Join(factory.Detect.Application.Root, "appName.runtimeconfig.json")
-			Expect(ioutil.WriteFile(runtimeConfigJSONPath, []byte(`
-{
-"runtimeOptions": {
-  "tfm": "netcoreapp2.2",
-  "framework": {
-    "name": "Microsoft.AspNetCore.App",
-    "version": "2.2.0"
-  }
-}
-}
-`), os.ModePerm)).To(Succeed())
-			code, err := runDetect(factory.Detect)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(code).To(Equal(detect.PassStatusCode))
-			Expect(factory.Plans.Plan).To(Equal(buildplan.Plan{
-				Provides: []buildplan.Provided{{Name: aspnet.DotnetAspNet}},
-				Requires: []buildplan.Required{{
-					Name:     aspnet.DotnetAspNet,
-					Version:  "2.2.5",
-					Metadata: buildplan.Metadata{"launch": true},
-				}, {
-					Name:     "dotnet-runtime",
-					Version:  "2.2.5",
-					Metadata: buildplan.Metadata{"build": true, "launch": true},
-				}},
-			}))
-		})
-		//
-		it("passes when there is a valid runtimeconfig.json where the specified major is provided", func() {
-			runtimeConfigJSONPath := filepath.Join(factory.Detect.Application.Root, "appName.runtimeconfig.json")
-			Expect(ioutil.WriteFile(runtimeConfigJSONPath, []byte(`
-{
- "runtimeOptions": {
-   "tfm": "netcoreapp2.2",
-   "framework": {
-     "name": "Microsoft.AspNetCore.App",
-     "version": "2.1.0"
-   }
- }
-}
-`), os.ModePerm)).To(Succeed())
-			code, err := runDetect(factory.Detect)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(code).To(Equal(detect.PassStatusCode))
-			Expect(factory.Plans.Plan).To(Equal(buildplan.Plan{
-				Provides: []buildplan.Provided{{Name: aspnet.DotnetAspNet}},
-				Requires: []buildplan.Required{{
-					Name:     aspnet.DotnetAspNet,
-					Version:  "2.2.5",
-					Metadata: buildplan.Metadata{"launch": true},
-				}, {
-					Name:     "dotnet-runtime",
-					Version:  "2.2.5",
-					Metadata: buildplan.Metadata{"build": true, "launch": true},
-				}},
-			}))
-		})
-
-		it("passes when there is a valid runtimeconfig.json where there are no valid roll forward versions available", func() {
-			runtimeConfigJSONPath := filepath.Join(factory.Detect.Application.Root, "appName.runtimeconfig.json")
-			Expect(ioutil.WriteFile(runtimeConfigJSONPath, []byte(`
-{
- "runtimeOptions": {
-   "tfm": "netcoreapp2.2",
-   "framework": {
-     "name": "Microsoft.AspNetCore.App",
-     "version": "1.1.0"
-   }
- }
-}
-`), os.ModePerm)).To(Succeed())
-			code, err := runDetect(factory.Detect)
-			Expect(err).To(HaveOccurred())
-			Expect(code).To(Equal(detect.FailStatusCode))
-		})
 
 		it("passes when there is a valid runtimeconfig.json where there are no runtime options meaning the app is a self contained deployment", func() {
 			runtimeConfigJSONPath := filepath.Join(factory.Detect.Application.Root, "appName.runtimeconfig.json")
@@ -231,103 +151,6 @@ version = "2.2.5"
 			Expect(factory.Plans.Plan).To(Equal(buildplan.Plan{
 				Provides: []buildplan.Provided{{Name: aspnet.DotnetAspNet}},
 			}))
-		})
-
-		when("there is both a buildpack.yml and a runtimeconfig.json", func() {
-			it("should error out when the major version of both the buildpack.yml and runtimeconfig.json don't match", func() {
-				runtimeConfigJSONPath := filepath.Join(factory.Detect.Application.Root, "appName.runtimeconfig.json")
-				Expect(ioutil.WriteFile(runtimeConfigJSONPath, []byte(`
-{
-"runtimeOptions": {
-  "tfm": "netcoreapp3.2",
-  "framework": {
-    "name": "Microsoft.AspNetCore.App",
-    "version": "2.1.0"
-  }
-}
-}
-`), os.ModePerm)).To(Succeed())
-				test.WriteFile(t, filepath.Join(factory.Detect.Application.Root, "buildpack.yml"), fmt.Sprintf("dotnet-aspnet:\n  version: %s", "3.1.2"))
-
-				errorMessage := errors.New("major versions of runtimes do not match between buildpack.yml and runtimeconfig.json")
-				code, err := runDetect(factory.Detect)
-				Expect(err).To(HaveOccurred())
-				Expect(code).To(Equal(detect.FailStatusCode))
-				Expect(err).To(Equal(errorMessage))
-			})
-
-			it("should error out when the minor version of the buildpack.yml is less than than the minor version of the runtimeconfig.json", func() {
-				runtimeConfigJSONPath := filepath.Join(factory.Detect.Application.Root, "appName.runtimeconfig.json")
-				Expect(ioutil.WriteFile(runtimeConfigJSONPath, []byte(`
-{
-"runtimeOptions": {
-  "tfm": "netcoreapp3.2",
-  "framework": {
-    "name": "Microsoft.AspNetCore.App",
-    "version": "2.2.0"
-  }
-}
-}
-`), os.ModePerm)).To(Succeed())
-				test.WriteFile(t, filepath.Join(factory.Detect.Application.Root, "buildpack.yml"), fmt.Sprintf("dotnet-aspnet:\n  version: %s", "2.1.0"))
-
-				errorMessage := errors.New("the minor version of the runtimeconfig.json is greater than the minor version of the buildpack.yml")
-				code, err := runDetect(factory.Detect)
-				Expect(err).To(HaveOccurred())
-				Expect(code).To(Equal(detect.FailStatusCode))
-				Expect(err).To(Equal(errorMessage))
-			})
-
-			it("roll forward the version found in the buildpack.yml", func() {
-				runtimeConfigJSONPath := filepath.Join(factory.Detect.Application.Root, "appName.runtimeconfig.json")
-				Expect(ioutil.WriteFile(runtimeConfigJSONPath, []byte(`
-{
-"runtimeOptions": {
-  "tfm": "netcoreapp3.2",
-  "framework": {
-    "name": "Microsoft.AspNetCore.App",
-    "version": "2.1.0"
-  }
-}
-}
-`), os.ModePerm)).To(Succeed())
-				test.WriteFile(t, filepath.Join(factory.Detect.Application.Root, "buildpack.yml"), fmt.Sprintf("dotnet-aspnet:\n  version: %s", "2.2.0"))
-
-				fakeBuildpackToml := `
-[[dependencies]]
-id = "dotnet-aspnet"
-name = "Dotnet ASPNet"
-stacks = ["org.testeroni"]
-uri = "some-uri"
-version = "2.2.5"
-
-[[dependencies]]
-id = "dotnet-aspnet"
-name = "Dotnet ASPNet"
-stacks = ["org.testeroni"]
-uri = "some-uri"
-version = "2.1.4"
-`
-				_, err := toml.Decode(fakeBuildpackToml, &factory.Detect.Buildpack.Metadata)
-				Expect(err).ToNot(HaveOccurred())
-				factory.Detect.Stack = "org.testeroni"
-
-				code, err := runDetect(factory.Detect)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(code).To(Equal(detect.PassStatusCode))
-				Expect(factory.Plans.Plan).To(Equal(buildplan.Plan{
-					Provides: []buildplan.Provided{{Name: aspnet.DotnetAspNet}},
-					Requires: []buildplan.Required{{
-						Name:     aspnet.DotnetAspNet,
-						Version:  "2.2.5",
-						Metadata: buildplan.Metadata{"launch": true},
-					}, {
-						Name:     "dotnet-runtime",
-						Version:  "2.2.5",
-						Metadata: buildplan.Metadata{"build": true, "launch": true},
-					}},
-				}))
-			})
 		})
 	})
 

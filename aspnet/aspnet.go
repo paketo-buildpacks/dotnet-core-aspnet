@@ -1,6 +1,8 @@
 package aspnet
 
 import (
+	"fmt"
+	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
 	"github.com/cloudfoundry/libcfbuildpack/helper"
@@ -20,6 +22,12 @@ type Contributor struct {
 	logger             logger.Logger
 }
 
+type BuildpackYAML struct {
+	Config struct {
+		Version string `yaml:"version""`
+	} `yaml:"dotnet-runtime"`
+}
+
 func NewContributor(context build.Build) (Contributor, bool, error) {
 	plan, wantDependency, err := context.Plans.GetShallowMerged(DotnetAspNet)
 	if err != nil{
@@ -29,11 +37,38 @@ func NewContributor(context build.Build) (Contributor, bool, error) {
 		return Contributor{}, false, nil
 	}
 
-	dep, err := context.Buildpack.RuntimeDependency(DotnetAspNet, plan.Version, context.Stack)
+	version := plan.Version
+
+	if plan.Version != "" {
+		rollForwardVersion := plan.Version
+
+		buildpackYAML, err := LoadBuildpackYAML(context.Application.Root)
+		if err != nil {
+			return Contributor{}, false, err
+		}
+
+		if buildpackYAML != (BuildpackYAML{}) {
+			err := utils.BuildpackYAMLVersionCheck(rollForwardVersion, buildpackYAML.Config.Version)
+			if err != nil {
+				return Contributor{}, false, err
+			}
+			rollForwardVersion = buildpackYAML.Config.Version
+		}
+
+		version, err = utils.FrameworkRollForward(rollForwardVersion, DotnetAspNet, context)
+		if err != nil {
+			return Contributor{}, false, err
+		}
+
+		if version == "" {
+			return Contributor{}, false, fmt.Errorf("no version of the dotnet-runtime was compatible with what was specified in the runtimeconfig.json of the application")
+		}
+	}
+
+	dep, err := context.Buildpack.RuntimeDependency(DotnetAspNet, version, context.Stack)
 	if err != nil {
 		return Contributor{}, false, err
 	}
-
 
 	return Contributor{
 		context:            context,
@@ -108,4 +143,17 @@ func getFlags(metadata buildpackplan.Metadata) []layers.Flag{
 		}
 	}
 	return flagsArray
+}
+
+func LoadBuildpackYAML(appRoot string) (BuildpackYAML, error) {
+	var err error
+	buildpackYAML := BuildpackYAML{}
+	bpYamlPath := filepath.Join(appRoot, "buildpack.yml")
+
+	if exists, err := helper.FileExists(bpYamlPath); err != nil {
+		return BuildpackYAML{}, err
+	} else if exists {
+		err = helper.ReadBuildpackYaml(bpYamlPath, &buildpackYAML)
+	}
+	return buildpackYAML, err
 }

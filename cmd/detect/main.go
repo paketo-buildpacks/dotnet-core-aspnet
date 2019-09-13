@@ -44,11 +44,6 @@ func runDetect(context detect.Detect) (int, error) {
 		return context.Fail(), err
 	}
 
-	buildpackYAML, err := LoadBuildpackYAML(context.Application.Root)
-	if err != nil {
-		return context.Fail(), err
-	}
-
 	hasFDE, err := runtimeConfig.HasFDE()
 	if err != nil{
 		return context.Fail(), err
@@ -56,32 +51,14 @@ func runDetect(context detect.Detect) (int, error) {
 
 	if runtimeConfig.HasASPNetDependency(){
 		if hasFDE {
-			rollForwardVersion := runtimeConfig.Version
-
-			if buildpackYAML != (BuildpackYAML{}) {
-				err := checkIfVersionsAreValid(rollForwardVersion, buildpackYAML.Config.Version)
-				if err != nil {
-					return context.Fail(), err
-				}
-				rollForwardVersion = buildpackYAML.Config.Version
-			}
-
-			version, compatibleVersion, err := rollForward(rollForwardVersion, context)
-			if err != nil {
-				return context.Fail(), err
-			}
-
-			if !compatibleVersion {
-				return context.Fail(), fmt.Errorf("no version of the dotnet-runtime was compatible with what was specified in the runtimeconfig.json of the application")
-			}
 
 			plan.Requires = []buildplan.Required{{
 				Name:     aspnet.DotnetAspNet,
-				Version:  version,
+				Version:  runtimeConfig.Version,
 				Metadata: buildplan.Metadata{"launch": true},
 			}, {
 				Name:     "dotnet-runtime",
-				Version:  version,
+				Version:  runtimeConfig.Version,
 				Metadata: buildplan.Metadata{"build": true, "launch": true},
 			}}
 		}
