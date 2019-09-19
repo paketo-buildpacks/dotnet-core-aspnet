@@ -1,16 +1,18 @@
 package integration_test
 
 import (
+	"fmt"
+	"github.com/BurntSushi/toml"
+	"github.com/Masterminds/semver"
+	"github.com/cloudfoundry/dagger"
+	"io/ioutil"
 	"path/filepath"
-"testing"
+	"testing"
 
+	"github.com/sclevine/spec"
+	"github.com/sclevine/spec/report"
 
-"github.com/cloudfoundry/dagger"
-
-"github.com/sclevine/spec"
-"github.com/sclevine/spec/report"
-
-. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 )
 
 var (
@@ -72,5 +74,77 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 
 	})
 
+	it("should build a working OCI image for a simple app with aspnet dependencies that has a buildpack.yml in it", func() {
+		majorMinor := "2.2"
+		version, err := getLowestRuntimeVersionInMajorMinor(majorMinor)
+		Expect(err).ToNot(HaveOccurred())
+		bpYml := fmt.Sprintf(`---
+dotnet-framework:
+  version: "%s"
+`, version)
+
+		bpYmlPath := filepath.Join("testdata", "simple_aspnet_app_with_buildpack_yml", "buildpack.yml")
+		Expect(ioutil.WriteFile(bpYmlPath, []byte(bpYml), 0644)).To(Succeed())
+
+		app, err := dagger.PackBuild(filepath.Join("testdata", "simple_aspnet_app_with_buildpack_yml"), runtimeURI, aspnetURI)
+		Expect(err).ToNot(HaveOccurred())
+
+		Expect(app.StartWithCommand("./simple_aspnet_app --server.urls http://0.0.0.0:${PORT}")).To(Succeed())
+
+		Expect(app.BuildLogs()).To(ContainSubstring(fmt.Sprintf("dotnet-runtime.%s", version)))
+		Expect(app.BuildLogs()).To(ContainSubstring(fmt.Sprintf("dotnet-aspnetcore.%s", version)))
+
+		Eventually(func() string {
+			body, _, _ := app.HTTPGet("/")
+			return body
+		}).Should(ContainSubstring("simple_aspnet_app"))
+
+	})
+
+}
+
+func getLowestRuntimeVersionInMajorMinor(majorMinor string) (string, error) {
+	type buildpackTomlVersion struct {
+		Metadata struct {
+			Dependencies []struct {
+				Version string `toml:"version"`
+			} `toml:"dependencies"`
+		} `toml:"metadata"`
+	}
+
+	bpToml := buildpackTomlVersion{}
+	output, err := ioutil.ReadFile(filepath.Join("..", "buildpack.toml"))
+	if err != nil {
+		return "", err
+	}
+
+	majorMinorConstraint, err := semver.NewConstraint(fmt.Sprintf("%s.*", majorMinor))
+	if err != nil {
+		return "", err
+	}
+
+	lowestVersion, err := semver.NewVersion(fmt.Sprintf("%s.99", majorMinor))
+	if err != nil {
+		return "", err
+	}
+
+	_, err = toml.Decode(string(output), &bpToml)
+	if err != nil {
+		return "", err
+	}
+
+	for _, dep := range bpToml.Metadata.Dependencies {
+		depVersion, err := semver.NewVersion(dep.Version)
+		if err != nil {
+			return "", err
+		}
+		if majorMinorConstraint.Check(depVersion){
+			if depVersion.LessThan(lowestVersion){
+				lowestVersion = depVersion
+			}
+		}
+	}
+
+	return lowestVersion.String(), nil
 }
 

@@ -25,7 +25,7 @@ type Contributor struct {
 type BuildpackYAML struct {
 	Config struct {
 		Version string `yaml:"version""`
-	} `yaml:"dotnet-runtime"`
+	} `yaml:"dotnet-framework"`
 }
 
 func NewContributor(context build.Build) (Contributor, bool, error) {
@@ -52,12 +52,12 @@ func NewContributor(context build.Build) (Contributor, bool, error) {
 			if err != nil {
 				return Contributor{}, false, err
 			}
-			rollForwardVersion = buildpackYAML.Config.Version
-		}
-
-		version, err = utils.FrameworkRollForward(rollForwardVersion, DotnetAspNet, context)
-		if err != nil {
-			return Contributor{}, false, err
+			version = buildpackYAML.Config.Version
+		} else {
+			version, err = utils.FrameworkRollForward(rollForwardVersion, DotnetAspNet, context)
+			if err != nil {
+				return Contributor{}, false, err
+			}
 		}
 
 		if version == "" {

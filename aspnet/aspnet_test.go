@@ -65,16 +65,28 @@ func testDotnet(t *testing.T, when spec.G, it spec.S) {
 		})
 
 		when("when there is a buildpack.yml", func () {
-			it("returns roll forward from buildpack.yml", func() {
-				factory.AddPlan(buildpackplan.Plan{Name: DotnetAspNet, Version: "2.0.0"})
-				factory.AddDependencyWithVersion(DotnetAspNet, "2.1.0", stubDotnetAspnetFixture)
-				test.WriteFile(t, filepath.Join(factory.Build.Application.Root, "buildpack.yml"), fmt.Sprintf("dotnet-runtime:\n  version: %s", "2.2.0"))
+			it.Before(func() {
+				factory.AddPlan(buildpackplan.Plan{Name: DotnetAspNet, Version: "2.1.0"})
+				factory.AddDependencyWithVersion(DotnetAspNet, "2.1.5", stubDotnetAspnetFixture)
+				factory.AddDependencyWithVersion(DotnetAspNet, "2.2.2", stubDotnetAspnetFixture)
+			})
+			it("that has a version range it returns the highest patch for that range", func() {
+				test.WriteFile(t, filepath.Join(factory.Build.Application.Root, "buildpack.yml"), fmt.Sprintf("dotnet-framework:\n  version: %s", "2.2.*"))
 				defer os.RemoveAll(filepath.Join(factory.Build.Application.Root, "buildpack.yml"))
 
 				contributor, willContribute, err := NewContributor(factory.Build)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(willContribute).To(BeTrue())
 				Expect(contributor.aspnetLayer.Dependency.Version.String()).To(Equal("2.2.5"))
+			})
+			it("that has an exact version it only uses that exact version", func() {
+				test.WriteFile(t, filepath.Join(factory.Build.Application.Root, "buildpack.yml"), fmt.Sprintf("dotnet-framework:\n  version: %s", "2.2.2"))
+				defer os.RemoveAll(filepath.Join(factory.Build.Application.Root, "buildpack.yml"))
+
+				contributor, willContribute, err := NewContributor(factory.Build)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(willContribute).To(BeTrue())
+				Expect(contributor.aspnetLayer.Dependency.Version.String()).To(Equal("2.2.2"))
 			})
 		})
 
