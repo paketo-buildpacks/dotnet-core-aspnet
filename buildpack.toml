@@ -29,11 +29,11 @@ version = "2.1.13"
 
 [[metadata.dependencies]]
 id = "dotnet-aspnet"
-sha256 = "9c578eee5e7026bd74c101b0d0950650ad166b9899aa69f975e943c3ca25f955"
-source = "https://github.com/dotnet/cli/archive/729b316c13bf9289b033272c07c7dfd046ffbcaf.tar.gz"
-source_sha256 = "1e2463cc161ae8f516aa047b09bef29aff6732f8346626b312b3acd75e9191ba"
+sha256 = "451bc596fb932aa34f0f7a508278c67b65691a1379a5fe47a213caed59757ca9"
+source = "https://github.com/dotnet/cli/archive/3e0e612cb176daae0fce6ca54608d40428c9d27e.tar.gz"
+source_sha256 = "e7a0d34b933d2dcac5d7536ab850f75af967b52567c82cd75e36e7d8145c9c2e"
 stacks = ["org.cloudfoundry.stacks.cflinuxfs3"]
-uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore.2.2.6.linux-amd64-cflinuxfs3-9c578eee.tar.xz"
+uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore.2.2.6.linux-amd64-cflinuxfs3-451bc596.tar.xz"
 version = "2.2.6"
 
 [[metadata.dependencies]]
