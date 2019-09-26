@@ -112,19 +112,6 @@ func testDotnet(t *testing.T, when spec.G, it spec.S) {
 			Expect(symlinkLayer).To(test.HaveOverrideSharedEnvironment("DOTNET_ROOT", symlinkLayer.Root))
 		})
 
-		it("uses the default version when a version is not requested", func() {
-			factory.AddDependencyWithVersion(DotnetAspNet, "0.9", filepath.Join("testdata", "stub-dotnet-aspnet-default.tar.xz"))
-			factory.SetDefaultVersion(DotnetAspNet, "0.9")
-			factory.AddPlan(buildpackplan.Plan{Name: DotnetAspNet})
-
-			dotnetASPNetContributor, _, err := NewContributor(factory.Build)
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(dotnetASPNetContributor.Contribute()).To(Succeed())
-			layer := factory.Build.Layers.Layer(DotnetAspNet)
-			Expect(layer).To(test.HaveLayerVersion("0.9"))
-		})
-
 		it("contributes dotnet runtime to the build layer when included in the build plan", func() {
 			factory.AddPlan(buildpackplan.Plan{
 				Name: DotnetAspNet,
@@ -157,20 +144,6 @@ func testDotnet(t *testing.T, when spec.G, it spec.S) {
 
 			layer := factory.Build.Layers.Layer(DotnetAspNet)
 			Expect(layer).To(test.HaveLayerMetadata(false, false, true))
-		})
-
-		it("returns an error when unsupported version of dotnet runtime is included in the build plan", func() {
-			factory.AddPlan(buildpackplan.Plan{
-				Name:    DotnetAspNet,
-				Version: "9000.0.0",
-				Metadata: buildpackplan.Metadata{
-					"launch": true,
-				},
-			})
-
-			_, shouldContribute, err := NewContributor(factory.Build)
-			Expect(err).To(HaveOccurred())
-			Expect(shouldContribute).To(BeFalse())
 		})
 	})
 }
