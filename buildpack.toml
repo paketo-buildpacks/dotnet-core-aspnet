@@ -65,6 +65,15 @@ version = "2.1.13"
 
 [[metadata.dependencies]]
 id = "dotnet-aspnet"
+sha256 = "0f1ae8609c3af78e3c4640a91bd5c2c0ff72f1ff6b3202ffa1252c84b43fece6"
+source = "https://download.visualstudio.microsoft.com/download/pr/53cace8f-2907-487e-84d7-bc7a7ba5de05/326704ffa2ef9d4dcd0db2f1da996ebb/aspnetcore-runtime-2.2.1-linux-x64.tar.gz/archive/.tar.gz"
+source_sha256 = "8a275315b36f6f66038049c34dcb4808e0fa4ece49651957f7be83d6b235f4b8"
+stacks = ["org.cloudfoundry.stacks.cflinuxfs3"]
+uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore.2.2.1.linux-amd64-cflinuxfs3-0f1ae860.tar.xz"
+version = "2.2.1"
+
+[[metadata.dependencies]]
+id = "dotnet-aspnet"
 sha256 = "18af55ea240edb082072da8f353e6e9e99843a7d871167b314526bce02bb9611"
 source = "https://download.visualstudio.microsoft.com/download/pr/168bba07-32dc-4612-ab01-7632d412c4cd/e1ecbf16d84e504c1d66d7a7573c9171/aspnetcore-runtime-2.2.2-linux-x64.tar.gz/archive/.tar.gz"
 source_sha256 = "c3249eb70b2f74f7ce6481ae1928553034f7b18b04f7b8ed96d60cb9528afdcf"
