@@ -11,6 +11,15 @@ pre_package = "./scripts/build.sh"
 
 [[metadata.dependencies]]
 id = "dotnet-aspnet"
+sha256 = "dbf8b6f41779deb5fbb49262c849ecddfd8bde5c541585d7ec807544aaf0fa07"
+source = "https://download.visualstudio.microsoft.com/download/pr/927cbf41-157f-488b-ac7d-32034defebc3/41b011418f795d5a76bf930ad57a055b/aspnetcore-runtime-2.1.8-linux-x64.tar.gz/archive/.tar.gz"
+source_sha256 = "88831762a54fec8f8d1408a31a1a6dd226ffaf72eac6373ac93ccac21ec4fa56"
+stacks = ["org.cloudfoundry.stacks.cflinuxfs3"]
+uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore.2.1.8.linux-amd64-cflinuxfs3-dbf8b6f4.tar.xz"
+version = "2.1.8"
+
+[[metadata.dependencies]]
+id = "dotnet-aspnet"
 sha256 = "4b5bb74b3bc311b191c82381e958511c41f4e5a3b0e27ddbe8d8f15d2e977bf7"
 source = "https://download.visualstudio.microsoft.com/download/pr/c5075a91-1ae1-45f8-98ac-412b01697336/7c08df006985d6e631e5cf4de6811085/aspnetcore-runtime-2.1.9-linux-x64.tar.gz/archive/.tar.gz"
 source_sha256 = "b0f26f38c156ff4be425817ba042e37ecdefcf020585a1acd0c2d6139f34a9a8"
