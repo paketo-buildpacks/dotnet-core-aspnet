@@ -2,12 +2,13 @@ package integration_test
 
 import (
 	"fmt"
-	"github.com/BurntSushi/toml"
-	"github.com/Masterminds/semver"
-	"github.com/cloudfoundry/dagger"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
+
+	"github.com/BurntSushi/toml"
+	"github.com/Masterminds/semver"
+	"github.com/cloudfoundry/dagger"
 
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
@@ -43,9 +44,10 @@ func TestIntegration(t *testing.T) {
 
 func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 	var (
-		Expect func(interface{}, ...interface{}) Assertion
-	 	Eventually func(interface{}, ...interface{}) AsyncAssertion
-		app    *dagger.App
+		Expect     func(interface{}, ...interface{}) Assertion
+		Eventually func(interface{}, ...interface{}) AsyncAssertion
+		app        *dagger.App
+		err        error
 	)
 
 	it.Before(func() {
@@ -59,10 +61,12 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		}
 	})
 
-
-
 	it("should build a working OCI image for a simple app with aspnet dependencies", func() {
-		app, err := dagger.PackBuild(filepath.Join("testdata", "simple_aspnet_app"), runtimeURI, aspnetURI)
+		app, err = dagger.NewPack(
+			filepath.Join("testdata", "simple_aspnet_app"),
+			dagger.RandomImage(),
+			dagger.SetBuildpacks(runtimeURI, aspnetURI),
+		).Build()
 		Expect(err).ToNot(HaveOccurred())
 
 		Expect(app.StartWithCommand("./simple_aspnet_app --server.urls http://0.0.0.0:${PORT}")).To(Succeed())
@@ -86,7 +90,11 @@ dotnet-framework:
 		bpYmlPath := filepath.Join("testdata", "simple_aspnet_app_with_buildpack_yml", "buildpack.yml")
 		Expect(ioutil.WriteFile(bpYmlPath, []byte(bpYml), 0644)).To(Succeed())
 
-		app, err := dagger.PackBuild(filepath.Join("testdata", "simple_aspnet_app_with_buildpack_yml"), runtimeURI, aspnetURI)
+		app, err = dagger.NewPack(
+			filepath.Join("testdata", "simple_aspnet_app_with_buildpack_yml"),
+			dagger.RandomImage(),
+			dagger.SetBuildpacks(runtimeURI, aspnetURI),
+		).Build()
 		Expect(err).ToNot(HaveOccurred())
 
 		Expect(app.StartWithCommand("./simple_aspnet_app --server.urls http://0.0.0.0:${PORT}")).To(Succeed())
@@ -138,8 +146,8 @@ func getLowestRuntimeVersionInMajorMinor(majorMinor string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if majorMinorConstraint.Check(depVersion){
-			if depVersion.LessThan(lowestVersion){
+		if majorMinorConstraint.Check(depVersion) {
+			if depVersion.LessThan(lowestVersion) {
 				lowestVersion = depVersion
 			}
 		}
@@ -147,4 +155,3 @@ func getLowestRuntimeVersionInMajorMinor(majorMinor string) (string, error) {
 
 	return lowestVersion.String(), nil
 }
-
