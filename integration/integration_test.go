@@ -69,7 +69,7 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		).Build()
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(app.StartWithCommand("./simple_aspnet_app --server.urls http://0.0.0.0:${PORT}")).To(Succeed())
+		Expect(app.StartWithCommand("./simple_aspnet_app --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
 		Eventually(func() string {
 			body, _, _ := app.HTTPGet("/")
@@ -97,7 +97,7 @@ dotnet-framework:
 		).Build()
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(app.StartWithCommand("./simple_aspnet_app --server.urls http://0.0.0.0:${PORT}")).To(Succeed())
+		Expect(app.StartWithCommand("./simple_aspnet_app --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
 		Expect(app.BuildLogs()).To(ContainSubstring(fmt.Sprintf("dotnet-runtime.%s", version)))
 		Expect(app.BuildLogs()).To(ContainSubstring(fmt.Sprintf("dotnet-aspnetcore.%s", version)))
