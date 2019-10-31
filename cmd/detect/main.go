@@ -2,20 +2,21 @@ package main
 
 import (
 	"fmt"
-	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
-	"github.com/cloudfoundry/libcfbuildpack/helper"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
-	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils"
+	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
+	"github.com/cloudfoundry/libcfbuildpack/helper"
+
 	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 )
 
 type BuildpackYAML struct {
-	Config struct{
+	Config struct {
 		Version string `yaml:"version""`
 	} `yaml:"dotnet-aspnet"`
 }
@@ -44,12 +45,12 @@ func runDetect(context detect.Detect) (int, error) {
 		return context.Fail(), err
 	}
 
-	hasFDE, err := runtimeConfig.HasFDE()
-	if err != nil{
+	hasFDE, err := runtimeConfig.HasExecutable()
+	if err != nil {
 		return context.Fail(), err
 	}
 
-	if runtimeConfig.HasASPNetDependency(){
+	if runtimeConfig.HasASPNetDependency() {
 		if hasFDE {
 
 			plan.Requires = []buildplan.Required{{
@@ -64,11 +65,10 @@ func runDetect(context detect.Detect) (int, error) {
 		}
 	}
 
-
 	return context.Pass(plan)
 }
 
-func checkIfVersionsAreValid(versionRuntimeConfig, versionBuildpackYAML string) error{
+func checkIfVersionsAreValid(versionRuntimeConfig, versionBuildpackYAML string) error {
 	splitVersionRuntimeConfig := strings.Split(versionRuntimeConfig, ".")
 	splitVersionBuildpackYAML := strings.Split(versionBuildpackYAML, ".")
 
@@ -77,28 +77,28 @@ func checkIfVersionsAreValid(versionRuntimeConfig, versionBuildpackYAML string) 
 	}
 
 	minorBPYAML, err := strconv.Atoi(splitVersionBuildpackYAML[1])
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
 	minorRuntimeConfig, err := strconv.Atoi(splitVersionRuntimeConfig[1])
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
-	if minorBPYAML < minorRuntimeConfig{
+	if minorBPYAML < minorRuntimeConfig {
 		return fmt.Errorf("the minor version of the runtimeconfig.json is greater than the minor version of the buildpack.yml")
 	}
 
 	return nil
 }
 
-func rollForward(version string, context detect.Detect) (string, bool, error){
+func rollForward(version string, context detect.Detect) (string, bool, error) {
 	splitVersion := strings.Split(version, ".")
 	anyPatch := fmt.Sprintf("%s.%s.*", splitVersion[0], splitVersion[1])
 	anyMinor := fmt.Sprintf("%s.*.*", splitVersion[0])
 
-	versions := []string {version, anyPatch, anyMinor}
+	versions := []string{version, anyPatch, anyMinor}
 
 	deps, err := context.Buildpack.Dependencies()
 	if err != nil {

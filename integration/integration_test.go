@@ -6,9 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/BurntSushi/toml"
-	"github.com/Masterminds/semver"
 	"github.com/cloudfoundry/dagger"
+	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils/dotnettesting"
 
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
@@ -80,7 +79,7 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 
 	it("should build a working OCI image for a simple app with aspnet dependencies that has a buildpack.yml in it", func() {
 		majorMinor := "2.2"
-		version, err := getLowestRuntimeVersionInMajorMinor(majorMinor)
+		version, err := dotnettesting.GetLowestRuntimeVersionInMajorMinor(majorMinor, filepath.Join("..", "buildpack.toml"))
 		Expect(err).ToNot(HaveOccurred())
 		bpYml := fmt.Sprintf(`---
 dotnet-framework:
@@ -109,49 +108,4 @@ dotnet-framework:
 
 	})
 
-}
-
-func getLowestRuntimeVersionInMajorMinor(majorMinor string) (string, error) {
-	type buildpackTomlVersion struct {
-		Metadata struct {
-			Dependencies []struct {
-				Version string `toml:"version"`
-			} `toml:"dependencies"`
-		} `toml:"metadata"`
-	}
-
-	bpToml := buildpackTomlVersion{}
-	output, err := ioutil.ReadFile(filepath.Join("..", "buildpack.toml"))
-	if err != nil {
-		return "", err
-	}
-
-	majorMinorConstraint, err := semver.NewConstraint(fmt.Sprintf("%s.*", majorMinor))
-	if err != nil {
-		return "", err
-	}
-
-	lowestVersion, err := semver.NewVersion(fmt.Sprintf("%s.99", majorMinor))
-	if err != nil {
-		return "", err
-	}
-
-	_, err = toml.Decode(string(output), &bpToml)
-	if err != nil {
-		return "", err
-	}
-
-	for _, dep := range bpToml.Metadata.Dependencies {
-		depVersion, err := semver.NewVersion(dep.Version)
-		if err != nil {
-			return "", err
-		}
-		if majorMinorConstraint.Check(depVersion) {
-			if depVersion.LessThan(lowestVersion) {
-				lowestVersion = depVersion
-			}
-		}
-	}
-
-	return lowestVersion.String(), nil
 }
