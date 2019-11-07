@@ -1,13 +1,15 @@
 package main
 
 import (
-	"github.com/BurntSushi/toml"
-	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/BurntSushi/toml"
+	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
+	"github.com/cloudfoundry/dotnet-core-runtime-cnb/runtime"
 
 	. "github.com/onsi/gomega"
 
@@ -16,7 +18,6 @@ import (
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
-
 
 func TestUnitDetect(t *testing.T) {
 	spec.Run(t, "Detect", testDetect, spec.Report(report.Terminal{}))
@@ -30,7 +31,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 		factory = test.NewDetectFactory(t)
 		fakeBuildpackToml := `
 [[dependencies]]
-id = "dotnet-aspnet"
+id = "dotnet-aspnetcore"
 name = "Dotnet ASPNet"
 stacks = ["org.testeroni"]
 uri = "some-uri"
@@ -70,7 +71,7 @@ version = "2.2.5"
 					Version:  "2.2.5",
 					Metadata: buildplan.Metadata{"launch": true},
 				}, {
-					Name:     "dotnet-runtime",
+					Name:     runtime.DotnetRuntime,
 					Version:  "2.2.5",
 					Metadata: buildplan.Metadata{"build": true, "launch": true},
 				}},
@@ -100,7 +101,7 @@ version = "2.2.5"
 					Version:  "2.2.5",
 					Metadata: buildplan.Metadata{"launch": true},
 				}, {
-					Name:     "dotnet-runtime",
+					Name:     runtime.DotnetRuntime,
 					Version:  "2.2.5",
 					Metadata: buildplan.Metadata{"build": true, "launch": true},
 				}},
@@ -127,7 +128,6 @@ version = "2.2.5"
 				Provides: []buildplan.Provided{{Name: aspnet.DotnetAspNet}},
 			}))
 		})
-
 
 		it("passes when there is a valid runtimeconfig.json where there are no runtime options meaning the app is a self contained deployment", func() {
 			runtimeConfigJSONPath := filepath.Join(factory.Detect.Application.Root, "appName.runtimeconfig.json")

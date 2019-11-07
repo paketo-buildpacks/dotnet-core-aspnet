@@ -1,8 +1,7 @@
-package aspnet
+package runtime
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils"
@@ -13,24 +12,24 @@ import (
 	"github.com/cloudfoundry/libcfbuildpack/logger"
 )
 
-const DotnetAspNet = "dotnet-aspnetcore"
+const DotnetRuntime = "dotnet-runtime"
 
 type Contributor struct {
-	context            build.Build
-	plan               buildpackplan.Plan
-	aspnetLayer        layers.DependencyLayer
-	aspnetSymlinkLayer layers.Layer
-	logger             logger.Logger
+	context      build.Build
+	plan         buildpackplan.Plan
+	version      string
+	runtimeLayer layers.DependencyLayer
+	logger       logger.Logger
 }
 
 type BuildpackYAML struct {
 	Config struct {
-		Version string `yaml:"version""`
+		Version string `yaml:"version"`
 	} `yaml:"dotnet-framework"`
 }
 
 func NewContributor(context build.Build) (Contributor, bool, error) {
-	plan, wantDependency, err := context.Plans.GetShallowMerged(DotnetAspNet)
+	plan, wantDependency, err := context.Plans.GetShallowMerged(DotnetRuntime)
 	if err != nil {
 		return Contributor{}, false, err
 	}
@@ -55,7 +54,7 @@ func NewContributor(context build.Build) (Contributor, bool, error) {
 			}
 			version = buildpackYAML.Config.Version
 		} else {
-			version, err = utils.FrameworkRollForward(rollForwardVersion, DotnetAspNet, context)
+			version, err = utils.FrameworkRollForward(rollForwardVersion, DotnetRuntime, context)
 			if err != nil {
 				return Contributor{}, false, err
 			}
@@ -66,49 +65,26 @@ func NewContributor(context build.Build) (Contributor, bool, error) {
 		}
 	}
 
-	dep, err := context.Buildpack.RuntimeDependency(DotnetAspNet, version, context.Stack)
+	dep, err := context.Buildpack.RuntimeDependency(DotnetRuntime, version, context.Stack)
 	if err != nil {
 		return Contributor{}, false, err
 	}
 
 	return Contributor{
-		context:            context,
-		plan:               plan,
-		aspnetLayer:        context.Layers.DependencyLayer(dep),
-		aspnetSymlinkLayer: context.Layers.Layer("aspnet-symlinks"),
-		logger:             context.Logger,
+		context:      context,
+		plan:         plan,
+		version:      dep.Version.Version.String(),
+		runtimeLayer: context.Layers.DependencyLayer(dep),
+		logger:       context.Logger,
 	}, true, nil
 }
 
 func (c Contributor) Contribute() error {
-	err := c.aspnetLayer.Contribute(func(artifact string, layer layers.DependencyLayer) error {
+
+	return c.runtimeLayer.Contribute(func(artifact string, layer layers.DependencyLayer) error {
 		layer.Logger.Body("Expanding to %s", layer.Root)
 
 		if err := helper.ExtractTarXz(artifact, layer.Root, 0); err != nil {
-			return err
-		}
-
-		return nil
-	}, getFlags(c.plan.Metadata)...)
-
-	if err != nil {
-		return err
-	}
-
-	err = c.aspnetSymlinkLayer.Contribute(c.context.Buildpack, func(layer layers.Layer) error {
-		pathToRuntime := os.Getenv("DOTNET_ROOT")
-
-		if err := utils.SymlinkSharedFolder(pathToRuntime, layer.Root); err != nil {
-			return err
-		}
-
-		if err := utils.SymlinkSharedFolder(c.aspnetLayer.Root, layer.Root); err != nil {
-			return err
-		}
-
-		hostDir := filepath.Join(pathToRuntime, "host")
-
-		if err := helper.WriteSymlink(hostDir, filepath.Join(layer.Root, filepath.Base(hostDir))); err != nil {
 			return err
 		}
 
@@ -116,14 +92,12 @@ func (c Contributor) Contribute() error {
 			return err
 		}
 
+		if err := layer.OverrideBuildEnv("RUNTIME_VERSION", c.version); err != nil {
+			return err
+		}
+
 		return nil
 	}, getFlags(c.plan.Metadata)...)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func getFlags(metadata buildpackplan.Metadata) []layers.Flag {
