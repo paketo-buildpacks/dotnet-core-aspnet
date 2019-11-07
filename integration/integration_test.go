@@ -16,8 +16,11 @@ import (
 )
 
 var (
-	bpDir, aspnetURI, runtimeURI string
+	bpDir, aspnetURI, builder string
+	bpList                    []string
 )
+
+const testBuildpack = "test-buildpack"
 
 var suite = spec.New("Integration", spec.Report(report.Terminal{}))
 
@@ -25,20 +28,43 @@ func init() {
 	suite("Integration", testIntegration)
 }
 
-func TestIntegration(t *testing.T) {
+func BeforeSuite() {
 	var err error
-	Expect := NewWithT(t).Expect
+	var config dagger.TestConfig
+
 	bpDir, err = dagger.FindBPRoot()
 	Expect(err).NotTo(HaveOccurred())
 	aspnetURI, err = dagger.PackageBuildpack(bpDir)
 	Expect(err).ToNot(HaveOccurred())
-	defer dagger.DeleteBuildpack(aspnetURI)
 
-	runtimeURI, err = dagger.GetLatestBuildpack("dotnet-core-runtime-cnb")
+	config, err = dagger.ParseConfig("config.json")
 	Expect(err).ToNot(HaveOccurred())
-	defer dagger.DeleteBuildpack(runtimeURI)
 
+	builder = config.Builder
+
+	for _, bp := range config.BuildpackOrder[builder] {
+		var bpURI string
+		if bp == testBuildpack {
+			bpList = append(bpList, aspnetURI)
+			continue
+		}
+		bpURI, err = dagger.GetLatestBuildpack(bp)
+		Expect(err).ToNot(HaveOccurred())
+		bpList = append(bpList, bpURI)
+	}
+}
+
+func AfterSuite() {
+	for _, bp := range bpList {
+		Expect(dagger.DeleteBuildpack(bp)).To(Succeed())
+	}
+}
+
+func TestIntegration(t *testing.T) {
+	RegisterTestingT(t)
+	BeforeSuite()
 	suite.Run(t)
+	AfterSuite()
 }
 
 func testIntegration(t *testing.T, _ spec.G, it spec.S) {
@@ -64,9 +90,14 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "simple_aspnet_app"),
 			dagger.RandomImage(),
-			dagger.SetBuildpacks(runtimeURI, aspnetURI),
+			dagger.SetBuildpacks(bpList...),
+			dagger.SetBuilder(builder),
 		).Build()
 		Expect(err).ToNot(HaveOccurred())
+
+		if builder == "bionic" {
+			app.SetHealthCheck("stat /workspace", "2s", "15s")
+		}
 
 		Expect(app.StartWithCommand("./simple_aspnet_app --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
@@ -92,9 +123,14 @@ dotnet-framework:
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "simple_aspnet_app_with_buildpack_yml"),
 			dagger.RandomImage(),
-			dagger.SetBuildpacks(runtimeURI, aspnetURI),
+			dagger.SetBuildpacks(bpList...),
+			dagger.SetBuilder(builder),
 		).Build()
 		Expect(err).ToNot(HaveOccurred())
+
+		if builder == "bionic" {
+			app.SetHealthCheck("stat /workspace", "2s", "15s")
+		}
 
 		Expect(app.StartWithCommand("./simple_aspnet_app --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
