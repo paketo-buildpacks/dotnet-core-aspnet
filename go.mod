@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/buildpack/libbuildpack v1.25.4
-	github.com/cloudfoundry/dagger v0.0.0-20191105211753-5d1b464d63f1
+	github.com/cloudfoundry/dagger v0.0.0-20191111215620-6e3477dc5dcb
 	github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.64
 	github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.78
 	github.com/cloudfoundry/libcfbuildpack v1.91.4
