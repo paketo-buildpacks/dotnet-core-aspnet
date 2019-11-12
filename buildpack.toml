@@ -83,11 +83,11 @@ api = "0.2"
 
   [[metadata.dependencies]]
     id = "dotnet-aspnetcore"
-    sha256 = "cb1c13f4dfbff252208bdfce63829f359210364c47c914182b94f673d66b230d"
+    sha256 = "bc189754a9f465d9014d137058990f4b44496ebb1fa9885518043b4ae6566f8a"
     source = "https://download.visualstudio.microsoft.com/download/pr/b0c44e05-b7a1-4221-94ec-a0c0d3a11eed/afc61567dd6db8f097e244871889458c/aspnetcore-runtime-3.0.0-linux-x64.tar.gz"
     source_sha256 = "8d28aa53f47e8b2ef5c39ddee75cc22527ace332c528bbe85da99bf1b4906b36"
     stacks = ["io.buildpacks.stacks.bionic"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore.3.0.0.linux-amd64-cflinuxfs3-cb1c13f4.tar.xz"
+    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore.3.0.0.linux-amd64-cflinuxfs3-bc189754.tar.xz"
     version = "3.0.0"
 
   [[metadata.dependencies]]
