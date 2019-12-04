@@ -29,11 +29,11 @@ api = "0.2"
 
   [[metadata.dependencies]]
     id = "dotnet-aspnetcore"
-    sha256 = "de13672c1314905235caaf1e4e78c225394b006ae76b2aa0174e2184a3a91e9f"
+    sha256 = "ad55d0ff01c0be03aeb14c428cebf749e7dfedc401e16ef793ec7756752ba70b"
     source = "https://download.visualstudio.microsoft.com/download/pr/22e9f27e-12cd-4ba9-86ce-113cbe7c55c2/a1097e49b4da2c1949919e752264f691/aspnetcore-runtime-2.1.14-linux-x64.tar.gz"
     source_sha256 = "e8f1895914c8a7cb619d16600887fe25aab0ec616cd22fef668c0d0b7558d56a"
-    stacks = ["org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore.2.1.14.linux-amd64-cflinuxfs3-de13672c.tar.xz"
+    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
+    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore.2.1.14.linux-amd64-any-stack-ad55d0ff.tar.xz"
     version = "2.1.14"
 
   [[metadata.dependencies]]
