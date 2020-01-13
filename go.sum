@@ -52,8 +52,8 @@ github.com/cloudfoundry/libcfbuildpack v1.91.2 h1:c6hwFmHLqYWhtC3CYPsfCeo/9d1LcK
 github.com/cloudfoundry/libcfbuildpack v1.91.2/go.mod h1:MmVyN2ZbxoWcuJ3cK5HVQWwUmwFTRrJbKAao6f2/EZ8=
 github.com/cloudfoundry/libcfbuildpack v1.91.4 h1:aLJLomJI9uYizrBQ28OkiSKzq+5RjXfV96qKBgt3ulE=
 github.com/cloudfoundry/libcfbuildpack v1.91.4/go.mod h1:1W3acvFCrUAnYOHZSVoRtxVAiSFKYatBZExvEyHgYPk=
-github.com/cloudfoundry/libcfbuildpack v1.91.20 h1:ll9/TuxtSeESIZG/vThZGE5ZkJZGvUN8/B58cKtU87I=
-github.com/cloudfoundry/libcfbuildpack v1.91.20/go.mod h1:+m6SL65YqNK9RvUoWdEAk7rMkMvKRUQJ3ay1AVP8tWU=
+github.com/cloudfoundry/libcfbuildpack v1.91.21 h1:T9JZZ7vwhqhvim3IZ8mq2wUFkJVOFTAh2Ut1F4UrUSo=
+github.com/cloudfoundry/libcfbuildpack v1.91.21/go.mod h1:+m6SL65YqNK9RvUoWdEAk7rMkMvKRUQJ3ay1AVP8tWU=
 github.com/cloudfoundry/packit v0.0.0-20191014140300-f8d2e0b20a04 h1:IKq64UyPDs+HD8dDE7fRHC+W/Vw2L0J+GfPuTiTTo50=
 github.com/cloudfoundry/packit v0.0.0-20191014140300-f8d2e0b20a04/go.mod h1:m8hk5BTIclmOWMxv3aQKIU/0LA4FVe4XKC9o0VNsLow=
 github.com/cloudfoundry/packit v0.0.0-20191015134313-760041110f18 h1:uPn7oTVLGfIoys0HkyFVAvyDOA3RyVH8qzUz/8wU35I=
