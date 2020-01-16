@@ -88,7 +88,7 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 
 	it("should build a working OCI image for a simple app with aspnet dependencies", func() {
 		app, err = dagger.NewPack(
-			filepath.Join("testdata", "simple_aspnet_app"),
+			filepath.Join("testdata", "simple_aspnet_app_3.1"),
 			dagger.RandomImage(),
 			dagger.SetBuildpacks(bpList...),
 			dagger.SetBuilder(builder),
@@ -104,12 +104,12 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		Eventually(func() string {
 			body, _, _ := app.HTTPGet("/")
 			return body
-		}).Should(ContainSubstring("Welcome"))
+		}).Should(ContainSubstring("Hello World!"))
 
 	})
 
 	it("should build a working OCI image for a simple app with aspnet dependencies that has a buildpack.yml in it", func() {
-		majorMinor := "2.2"
+		majorMinor := "3.1"
 		version, err := dotnettesting.GetLowestRuntimeVersionInMajorMinor(majorMinor, filepath.Join("..", "buildpack.toml"))
 		Expect(err).ToNot(HaveOccurred())
 		bpYml := fmt.Sprintf(`---
@@ -117,11 +117,11 @@ dotnet-framework:
   version: "%s"
 `, version)
 
-		bpYmlPath := filepath.Join("testdata", "simple_aspnet_app_with_buildpack_yml", "buildpack.yml")
+		bpYmlPath := filepath.Join("testdata", "simple_aspnet_app_with_buildpack_yml_3.1", "buildpack.yml")
 		Expect(ioutil.WriteFile(bpYmlPath, []byte(bpYml), 0644)).To(Succeed())
 
 		app, err = dagger.NewPack(
-			filepath.Join("testdata", "simple_aspnet_app_with_buildpack_yml"),
+			filepath.Join("testdata", "simple_aspnet_app_with_buildpack_yml_3.1"),
 			dagger.RandomImage(),
 			dagger.SetBuildpacks(bpList...),
 			dagger.SetBuilder(builder),
@@ -140,7 +140,7 @@ dotnet-framework:
 		Eventually(func() string {
 			body, _, _ := app.HTTPGet("/")
 			return body
-		}).Should(ContainSubstring("simple_aspnet_app"))
+		}).Should(ContainSubstring("Hello World!"))
 
 	})
 
