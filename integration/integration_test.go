@@ -22,7 +22,7 @@ var (
 
 const testBuildpack = "test-buildpack"
 
-var suite = spec.New("Integration", spec.Report(report.Terminal{}))
+var suite = spec.New("Integration", spec.Report(report.Terminal{}), spec.Parallel())
 
 func init() {
 	suite("Integration", testIntegration)
