@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
 	"github.com/cloudfoundry/libcfbuildpack/helper"
@@ -49,13 +48,13 @@ func NewContributor(context build.Build) (Contributor, bool, error) {
 		}
 
 		if buildpackYAML != (BuildpackYAML{}) {
-			err := utils.BuildpackYAMLVersionCheck(rollForwardVersion, buildpackYAML.Config.Version)
+			err := BuildpackYAMLVersionCheck(rollForwardVersion, buildpackYAML.Config.Version)
 			if err != nil {
 				return Contributor{}, false, err
 			}
 			version = buildpackYAML.Config.Version
 		} else {
-			version, err = utils.FrameworkRollForward(rollForwardVersion, DotnetAspNet, context)
+			version, err = FrameworkRollForward(rollForwardVersion, DotnetAspNet, context)
 			if err != nil {
 				return Contributor{}, false, err
 			}
@@ -98,11 +97,11 @@ func (c Contributor) Contribute() error {
 	err = c.aspnetSymlinkLayer.Contribute(c.context.Buildpack, func(layer layers.Layer) error {
 		pathToRuntime := os.Getenv("DOTNET_ROOT")
 
-		if err := utils.SymlinkSharedFolder(pathToRuntime, layer.Root); err != nil {
+		if err := SymlinkSharedFolder(pathToRuntime, layer.Root); err != nil {
 			return err
 		}
 
-		if err := utils.SymlinkSharedFolder(c.aspnetLayer.Root, layer.Root); err != nil {
+		if err := SymlinkSharedFolder(c.aspnetLayer.Root, layer.Root); err != nil {
 			return err
 		}
 

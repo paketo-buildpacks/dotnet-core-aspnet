@@ -9,7 +9,6 @@ import (
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
-	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/helper"
 )
@@ -39,7 +38,7 @@ func runDetect(context detect.Detect) (int, error) {
 	plan := buildplan.Plan{
 		Provides: []buildplan.Provided{{Name: aspnet.DotnetAspNet}}}
 
-	runtimeConfig, err := utils.NewRuntimeConfig(context.Application.Root)
+	runtimeConfig, err := aspnet.NewRuntimeConfig(context.Application.Root)
 	if err != nil {
 		return context.Fail(), err
 	}
