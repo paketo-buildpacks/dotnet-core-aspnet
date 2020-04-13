@@ -32,12 +32,6 @@
     # writing an application that needs to run ASPNet at runtime, this flag should
     # be set to true.
     launch = true
-
-    # Setting the cache flag to true will enable caching of the ASPNet
-    # dependency between builds. The benefits of caching include improved build
-    # speeds at the cost of a higher storage requirement to store the cached
-    # layer contents.
-    cache = true
 ```
 
 To package this buildpack for consumption:
