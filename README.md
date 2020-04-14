@@ -1,6 +1,18 @@
 # ASPNet Cloud Native Buildpack
 
+The Dotnet Core ASPNet CNB provides a version of the [Dotnet Core
+ASPNet Framework](https://github.com/aspnet) and sets an extension of the `$DOTNET_ROOT`
+location.
+
 ## Integration
+
+The Dotnet Core ASPNet CNB provides dotnet-aspnetcore as a dependency.
+Downstream buildpacks, like [Dotnet Core
+Build](https://github.com/paketo-buildpacks/dotnet-core-build) and [Dotnet
+Core SDK](https://github.com/paketo-buildpacks/dotnet-core-sdk) can require the
+dotnet-aspnetcore dependency by generating a [Build Plan
+TOML](https://github.com/buildpacks/spec/blob/master/buildpack.md#build-plan-toml)
+file that looks like the following:
 
 ```toml
 [[requires]]
@@ -22,13 +34,15 @@
   [requires.metadata]
 
     # Setting the build flag to true will ensure that the ASPNet
-    # depdendency is available on the $PATH for subsequent buildpacks during
-    # their build phase. If you are writing a buildpack that needs to run ASPNet
-    # during its build process, this flag should be set to true.
+    # dependency is available to subsequent buildpacks during their build phase.
+    # Currently we do not recommend having your application directly interface with
+    # the framework, instead use the dotnet-core-sdk. However,
+    # if you are writing a buildpack that needs to use the ASPNet during
+    # its build process, this flag should be set to true.
     build = true
 
     # Setting the launch flag to true will ensure that the ASPNet
-    # dependency is available on the $PATH for the running application. If you are
+    # dependency is available on the $DOTNET_ROOT for the running application. If you are
     # writing an application that needs to run ASPNet at runtime, this flag should
     # be set to true.
     launch = true
