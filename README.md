@@ -74,3 +74,12 @@ docker run -v "$PWD/integration/testdata/$app_name:/app" -it mcr.microsoft.com/d
     dotnet new web &&
     dotnet build -c Release -o /app"
 ```
+
+## `buildpack.yml` Configurations
+
+```yaml
+dotnet-framework:
+  # this allows you to specify a version constaint for the dotnet-runtime dependency
+  # any valid semver constaints (e.g. 2.* and 2.1.*) are also acceptable
+  version: "2.1.14"
+```
