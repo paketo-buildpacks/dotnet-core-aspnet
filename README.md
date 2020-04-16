@@ -77,9 +77,5 @@ docker run -v "$PWD/integration/testdata/$app_name:/app" -it mcr.microsoft.com/d
 
 ## `buildpack.yml` Configurations
 
-```yaml
-dotnet-framework:
-  # this allows you to specify a version constaint for the dotnet-runtime dependency
-  # any valid semver constaints (e.g. 2.* and 2.1.*) are also acceptable
-  version: "2.1.14"
-```
+There are no extra configurations for this buildpack based on `buildpack.yml`. If you like to specify a version
+constraint for the dotnet-runtime, see its [README](https://github.com/paketo-buildpacks/dotnet-core-runtime/blob/master/README.md#buildpackyml-configurations).
