@@ -74,3 +74,8 @@ docker run -v "$PWD/integration/testdata/$app_name:/app" -it mcr.microsoft.com/d
     dotnet new web &&
     dotnet build -c Release -o /app"
 ```
+
+## `buildpack.yml` Configurations
+
+There are no extra configurations for this buildpack based on `buildpack.yml`. If you like to specify a version
+constraint for the dotnet-runtime, see its [README](https://github.com/paketo-buildpacks/dotnet-core-runtime/blob/master/README.md#buildpackyml-configurations).
