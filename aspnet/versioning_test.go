@@ -148,6 +148,17 @@ func testVersioning(t *testing.T, when spec.G, it spec.S) {
 				Expect(err).To(Equal(fmt.Errorf("no compatible versions found")))
 				Expect(rollVersion).To(Equal(""))
 			})
+
+			it("returns an empty string and an error when it can't load the runtime config", func() {
+				appRoot = factory.Build.Application.Root
+				runtimeConfigJSONPath := filepath.Join(appRoot, "appName.runtimeconfig.json")
+				Expect(ioutil.WriteFile(runtimeConfigJSONPath, []byte(`
+	{
+	`), os.ModePerm)).To(Succeed())
+				rollVersion, err := aspnet.FrameworkRollForward("3.0.0", framework, factory.Build)
+				Expect(err.Error()).To(ContainSubstring("unable to parse runtime config"))
+				Expect(rollVersion).To(Equal(""))
+			})
 		})
 
 		when("applyPatches is true", func() {
