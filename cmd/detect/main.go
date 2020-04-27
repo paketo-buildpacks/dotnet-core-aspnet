@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
+	"github.com/paketo-buildpacks/dotnet-core-aspnet/aspnet"
 )
 
 func main() {

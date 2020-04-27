@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
-	. "github.com/onsi/gomega"
-
+	"github.com/paketo-buildpacks/dotnet-core-aspnet/aspnet"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
+
+	. "github.com/onsi/gomega"
 )
 
 func TestUnitRuntimeConfig(t *testing.T) {

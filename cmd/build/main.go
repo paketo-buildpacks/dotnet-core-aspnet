@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
 	"os"
 
 	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/paketo-buildpacks/dotnet-core-aspnet/aspnet"
 )
 
 func main() {

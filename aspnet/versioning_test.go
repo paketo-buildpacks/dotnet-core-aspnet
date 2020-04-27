@@ -5,15 +5,14 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
-	"github.com/cloudfoundry/libcfbuildpack/test"
-	. "github.com/onsi/gomega"
-
 	"testing"
 
+	"github.com/cloudfoundry/libcfbuildpack/test"
+	"github.com/paketo-buildpacks/dotnet-core-aspnet/aspnet"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
+
+	. "github.com/onsi/gomega"
 )
 
 func TestUnitVersioning(t *testing.T) {
