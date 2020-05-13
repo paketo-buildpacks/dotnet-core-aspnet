@@ -29,21 +29,21 @@ api = "0.2"
 
   [[metadata.dependencies]]
     id = "dotnet-aspnetcore"
-    sha256 = "5736292f80a9d921989072162b7ac6aca4f6381957c9e15c30e1b9fa073eb14e"
-    source = "https://download.visualstudio.microsoft.com/download/pr/2d72ee67-ac4d-42c6-97d9-a26a28201fc8/977ad14b99b6ed03dcefd6655789e43a/aspnetcore-runtime-3.1.2-linux-x64.tar.gz"
-    source_sha256 = "d3ec949528d698d9cd7016b9276b4c01a949c4970d168295b6506d7399d608f1"
-    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore.3.1.2.linux-amd64-any-stack-5736292f.tar.xz"
-    version = "3.1.2"
-
-  [[metadata.dependencies]]
-    id = "dotnet-aspnetcore"
     sha256 = "c96379e0d05c14e5f790bc806e101dbe49879c7b3df52849493a5831d66f5977"
     source = "https://download.visualstudio.microsoft.com/download/pr/7faca87b-7526-4dcd-ae23-4559d2c51ce3/7db1f314c733191ea43e1757e3b2583d/aspnetcore-runtime-3.1.3-linux-x64.tar.gz"
     source_sha256 = "34cc5c7f16b45234603d9f352a1bd3997d5e07d7380c49266860f75dbc29146d"
     stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
     uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_3.1.3_linux_x64_any-stack_c96379e0.tar.xz"
     version = "3.1.3"
+
+  [[metadata.dependencies]]
+    id = "dotnet-aspnetcore"
+    sha256 = "876b3b1add3748481b419037b5267e70466adc722ca1f7f566cd7fd7bf6145d4"
+    source = "https://download.visualstudio.microsoft.com/download/pr/a1ddc998-933c-47af-b8c7-dc2503e44e91/42d8cd08b2055df52c9457c993911f2e/aspnetcore-runtime-3.1.4-linux-x64.tar.gz"
+    source_sha256 = "ca41ea778e93449c1b37dea3e50850ce170c3737fe367a39d02eb786d6fdf97e"
+    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
+    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_3.1.4_linux_x64_any-stack_876b3b1a.tar.xz"
+    version = "3.1.4"
 
 [[stacks]]
   id = "org.cloudfoundry.stacks.cflinuxfs3"
