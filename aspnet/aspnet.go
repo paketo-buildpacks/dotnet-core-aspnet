@@ -24,7 +24,7 @@ type Contributor struct {
 
 type BuildpackYAML struct {
 	Config struct {
-		Version string `yaml:"version""`
+		Version string `yaml:"version"`
 	} `yaml:"dotnet-framework"`
 }
 
@@ -146,6 +146,9 @@ func LoadBuildpackYAML(appRoot string) (BuildpackYAML, error) {
 		return BuildpackYAML{}, err
 	} else if exists {
 		err = helper.ReadBuildpackYaml(bpYamlPath, &buildpackYAML)
+		if err != nil {
+			return BuildpackYAML{}, err
+		}
 	}
 	return buildpackYAML, err
 }
