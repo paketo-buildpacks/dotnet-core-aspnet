@@ -3,6 +3,8 @@ package integration_test
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -28,13 +30,39 @@ func init() {
 	suite("Integration", testIntegration)
 }
 
-func BeforeSuite() {
-	var err error
-	var config dagger.TestConfig
+func Package(root, version string, cached bool) (string, error) {
+	var cmd *exec.Cmd
 
-	bpDir, err = dagger.FindBPRoot()
+	bpPath := filepath.Join(root, "artifact")
+	if cached {
+		cmd = exec.Command(".bin/packager", "--archive", "--version", version, fmt.Sprintf("%s-cached", bpPath))
+	} else {
+		cmd = exec.Command(".bin/packager", "--archive", "--uncached", "--version", version, bpPath)
+	}
+
+	cmd.Env = append(os.Environ(), fmt.Sprintf("PACKAGE_DIR=%s", bpPath))
+	cmd.Dir = root
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+
+	if cached {
+		return fmt.Sprintf("%s-cached.tgz", bpPath), err
+	}
+
+	return fmt.Sprintf("%s.tgz", bpPath), err
+}
+
+func BeforeSuite() {
+	var (
+		err error
+		config dagger.TestConfig
+	)
+
+	bpDir, err = filepath.Abs("./..")
 	Expect(err).NotTo(HaveOccurred())
-	aspnetURI, err = dagger.PackageBuildpack(bpDir)
+
+	aspnetURI, err = Package(bpDir, "1.2.3", false)
 	Expect(err).ToNot(HaveOccurred())
 
 	config, err = dagger.ParseConfig("config.json")
@@ -44,13 +72,14 @@ func BeforeSuite() {
 
 	for _, bp := range config.BuildpackOrder[builder] {
 		var bpURI string
+
 		if bp == testBuildpack {
 			bpList = append(bpList, aspnetURI)
-			continue
+		} else {
+			bpURI, err = dagger.GetLatestBuildpack(bp)
+			Expect(err).ToNot(HaveOccurred())
+			bpList = append(bpList, bpURI)
 		}
-		bpURI, err = dagger.GetLatestBuildpack(bp)
-		Expect(err).ToNot(HaveOccurred())
-		bpList = append(bpList, bpURI)
 	}
 }
 
