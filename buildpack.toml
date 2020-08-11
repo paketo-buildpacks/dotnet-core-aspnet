@@ -30,21 +30,21 @@ api = "0.2"
 
   [[metadata.dependencies]]
     id = "dotnet-aspnetcore"
-    sha256 = "078c4833881fc72490a11571c564f40f5a6516256965d312d86b57cc9f8560b0"
-    source = "https://download.visualstudio.microsoft.com/download/pr/6827d794-a218-4352-b3b3-a19ec773c975/e3e53bc2f20df220a29c6e09f74d8a00/aspnetcore-runtime-3.1.5-linux-x64.tar.gz"
-    source_sha256 = "bf202e612374eecf089b08db2085f36e54c09d6e93db0ff4244580ee47b9c61f"
-    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_3.1.5_linux_x64_any-stack_078c4833.tar.xz"
-    version = "3.1.5"
-
-  [[metadata.dependencies]]
-    id = "dotnet-aspnetcore"
     sha256 = "36244a15a4eadfe9d03299a79f3abc2d85a483f17dc8f8bcecd9b273d06c143d"
     source = "https://download.visualstudio.microsoft.com/download/pr/9eadec7a-dd7e-476d-a348-c4bf946a0bad/c11b5123931ee17faba27e5debe74731/aspnetcore-runtime-3.1.6-linux-x64.tar.gz"
     source_sha256 = "70734b39eddea268a16459a5178a4fe727af3051e8a0f78880906ff109f9f8d3"
     stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
     uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_3.1.6_linux_x64_any-stack_36244a15.tar.xz"
     version = "3.1.6"
+
+  [[metadata.dependencies]]
+    id = "dotnet-aspnetcore"
+    sha256 = "50ddfdfc8bb28984cdbac100c098bd61828f8706df72e7899d3c2b04c7628db0"
+    source = "https://download.visualstudio.microsoft.com/download/pr/e7d0601d-41b4-483f-b411-f2b42708054a/191b56b81e1830b413d0794728831eea/aspnetcore-runtime-3.1.7-linux-x64.tar.gz"
+    source_sha256 = "4f0ce619c1b1dbc8ccd799877b5d73158a07b1ebd1222d44b909bba13bdf735c"
+    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
+    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_3.1.7_linux_x64_any-stack_50ddfdfc.tar.xz"
+    version = "3.1.7"
 
 [[stacks]]
   id = "io.buildpacks.stacks.bionic"
