@@ -55,7 +55,7 @@ func Package(root, version string, cached bool) (string, error) {
 
 func BeforeSuite() {
 	var (
-		err error
+		err    error
 		config dagger.TestConfig
 	)
 
@@ -76,7 +76,7 @@ func BeforeSuite() {
 		if bp == testBuildpack {
 			bpList = append(bpList, aspnetURI)
 		} else {
-			bpURI, err = dagger.GetLatestBuildpack(bp)
+			bpURI, err = dagger.GetLatestCommunityBuildpack("paketo-buildpacks", bp)
 			Expect(err).ToNot(HaveOccurred())
 			bpList = append(bpList, bpURI)
 		}
