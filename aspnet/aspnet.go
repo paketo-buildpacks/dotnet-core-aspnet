@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
@@ -37,10 +38,11 @@ func NewContributor(context build.Build) (Contributor, bool, error) {
 		return Contributor{}, false, nil
 	}
 
-	version := plan.Version
+	// later todo - use a smarter resolver
+	version := strings.Split(plan.Version, ",")[0]
 
-	if plan.Version != "" {
-		rollForwardVersion := plan.Version
+	if version != "" {
+		rollForwardVersion := version
 
 		buildpackYAML, err := LoadBuildpackYAML(context.Application.Root)
 		if err != nil {
