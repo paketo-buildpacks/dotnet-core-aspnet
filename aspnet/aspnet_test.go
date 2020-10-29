@@ -2,16 +2,17 @@ package aspnet
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"testing"
 )
 
 func TestUnitDotnet(t *testing.T) {
@@ -20,10 +21,10 @@ func TestUnitDotnet(t *testing.T) {
 
 func testDotnet(t *testing.T, when spec.G, it spec.S) {
 	var (
-		factory     *test.BuildFactory
+		factory                 *test.BuildFactory
 		stubDotnetAspnetFixture = filepath.Join("testdata", "stub-dotnet-aspnet.tar.xz")
-		symlinkPath string
-		symlinkLayer layers.Layer
+		symlinkPath             string
+		symlinkLayer            layers.Layer
 	)
 
 	it.Before(func() {
@@ -40,19 +41,21 @@ func testDotnet(t *testing.T, when spec.G, it spec.S) {
 		os.Setenv("DOTNET_ROOT", symlinkPath)
 	})
 
-	it.After(func () {
+	it.After(func() {
 		os.RemoveAll(symlinkPath)
 		os.Unsetenv("DOTNET_ROOT")
 	})
 
 	when("runtime.NewContributor", func() {
-		when("when there is no buildpack.yml", func () {
+		when("when there is no buildpack.yml", func() {
 			it("returns true if a build plan exists and matching version is found", func() {
 				factory.AddPlan(buildpackplan.Plan{Name: DotnetAspNet, Version: "2.2.5"})
+				factory.AddPlan(buildpackplan.Plan{Name: DotnetAspNet, Version: "2.2.5"})
 
-				_, willContribute, err := NewContributor(factory.Build)
+				contributor, willContribute, err := NewContributor(factory.Build)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(willContribute).To(BeTrue())
+				Expect(contributor.aspnetLayer.Dependency.Version.String()).To(Equal("2.2.5"))
 			})
 
 			it("returns true if a build plan exists and no matching version is found", func() {
@@ -64,7 +67,7 @@ func testDotnet(t *testing.T, when spec.G, it spec.S) {
 			})
 		})
 
-		when("when there is a buildpack.yml", func () {
+		when("when there is a buildpack.yml", func() {
 			it.Before(func() {
 				factory.AddPlan(buildpackplan.Plan{Name: DotnetAspNet, Version: "2.1.0"})
 				factory.AddDependencyWithVersion(DotnetAspNet, "2.1.5", stubDotnetAspnetFixture)
