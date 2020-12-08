@@ -6,5 +6,9 @@ import (
 )
 
 func main() {
-	packit.Run(dotnetcoreaspnet.Detect(), dotnetcoreaspnet.Build())
+	buildpackYMLParser := dotnetcoreaspnet.NewBuildpackYMLParser()
+	packit.Run(
+		dotnetcoreaspnet.Detect(buildpackYMLParser),
+		dotnetcoreaspnet.Build(),
+	)
 }

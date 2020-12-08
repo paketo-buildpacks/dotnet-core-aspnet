@@ -10,6 +10,7 @@ import (
 func TestUnitDotnetCoreAspnet(t *testing.T) {
 	suite := spec.New("dotnet-core-aspnet", spec.Report(report.Terminal{}), spec.Parallel())
 	suite("Build", testBuild)
+	suite("BuildpackYMLParser", testBuildpackYMLParser)
 	suite("Detect", testDetect)
 	suite.Run(t)
 }
