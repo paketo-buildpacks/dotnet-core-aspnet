@@ -1,12 +1,18 @@
 package dotnetcoreaspnet_test
 
 import (
-	"testing"
+	"bytes"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"testing"
+	"time"
 
-	"github.com/paketo-buildpacks/packit"
 	dotnetcoreaspnet "github.com/paketo-buildpacks/dotnet-core-aspnet"
+	"github.com/paketo-buildpacks/dotnet-core-aspnet/fakes"
+	"github.com/paketo-buildpacks/packit"
+	"github.com/paketo-buildpacks/packit/chronos"
+	"github.com/paketo-buildpacks/packit/postal"
 	"github.com/sclevine/spec"
 
 	. "github.com/onsi/gomega"
@@ -16,9 +22,15 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 	var (
 		Expect = NewWithT(t).Expect
 
-		layersDir  string
-		workingDir string
-		cnbDir     string
+		layersDir         string
+		workingDir        string
+		cnbDir            string
+		entryResolver     *fakes.EntryResolver
+		dependencyManager *fakes.DependencyManager
+		clock             chronos.Clock
+		timeStamp         time.Time
+		planRefinery      *fakes.BuildPlanRefinery
+		buffer            *bytes.Buffer
 
 		build packit.BuildFunc
 	)
@@ -34,7 +46,46 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		workingDir, err = ioutil.TempDir("", "working-dir")
 		Expect(err).NotTo(HaveOccurred())
 
-		build = dotnetcoreaspnet.Build()
+		entryResolver = &fakes.EntryResolver{}
+		entryResolver.ResolveCall.Returns.BuildpackPlanEntry = packit.BuildpackPlanEntry{
+			Name: "dotnet-aspnet",
+			Metadata: map[string]interface{}{
+				"version-source": "buildpack.yml",
+				"version":        "2.5.x",
+				"launch":         true,
+			},
+		}
+
+		dependencyManager = &fakes.DependencyManager{}
+		dependencyManager.ResolveCall.Returns.Dependency = postal.Dependency{
+			ID:   "dotnet-aspnet",
+			Name: "Dotnet Core ASPNet",
+		}
+
+		planRefinery = &fakes.BuildPlanRefinery{}
+
+		planRefinery.BillOfMaterialCall.Returns.BuildpackPlan = packit.BuildpackPlan{
+			Entries: []packit.BuildpackPlanEntry{
+				{
+					Name: "dotnet-aspnet",
+					Metadata: map[string]interface{}{
+						"version-source": "buildpack.yml",
+						"version":        "2.5.x",
+						"launch":         true,
+					},
+				},
+			},
+		}
+
+		buffer = bytes.NewBuffer(nil)
+		logEmitter := dotnetcoreaspnet.NewLogEmitter(buffer)
+
+		timeStamp = time.Now()
+		clock = chronos.NewClock(func() time.Time {
+			return timeStamp
+		})
+
+		build = dotnetcoreaspnet.Build(entryResolver, dependencyManager, planRefinery, logEmitter, clock)
 	})
 
 	it.After(func() {
@@ -53,7 +104,16 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Version: "some-version",
 			},
 			Plan: packit.BuildpackPlan{
-				Entries: []packit.BuildpackPlanEntry{},
+				Entries: []packit.BuildpackPlanEntry{
+					{
+						Name: "dotnet-aspnet",
+						Metadata: map[string]interface{}{
+							"version-source": "buildpack.yml",
+							"version":        "2.5.x",
+							"launch":         true,
+						},
+					},
+				},
 			},
 			Layers: packit.Layers{Path: layersDir},
 		})
@@ -61,10 +121,35 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		Expect(result).To(Equal(packit.BuildResult{
 			Plan: packit.BuildpackPlan{
-				Entries: nil,
+				Entries: []packit.BuildpackPlanEntry{
+					{
+						Name: "dotnet-aspnet",
+						Metadata: map[string]interface{}{
+							"version-source": "buildpack.yml",
+							"version":        "2.5.x",
+							"launch":         true,
+						},
+					},
+				},
 			},
-			Layers: nil,
+			Layers: []packit.Layer{
+				{
+					Name: "dotnet-core-aspnet",
+					Path: filepath.Join(layersDir, "dotnet-core-aspnet"),
+					SharedEnv: packit.Environment{
+						"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
+					},
+					LaunchEnv: packit.Environment{},
+					Build:     false,
+					Launch:    true,
+					Cache:     false,
+					Metadata: map[string]interface{}{
+						"dependency-sha": "",
+						"built_at":       timeStamp.Format(time.RFC3339Nano),
+					},
+				},
+			},
 		}))
-
+		Expect(filepath.Join(workingDir, ".dotnet_root")).To(BeADirectory())
 	})
 }
