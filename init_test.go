@@ -15,5 +15,6 @@ func TestUnitDotnetCoreAspnet(t *testing.T) {
 	suite("LogEmitter", testLogEmitter)
 	suite("PlanEntryResolver", testPlanEntryResolver)
 	suite("PlanRefinery", testPlanRefinery)
+	suite("DotnetRootLinker", testDotnetRootLinker)
 	suite.Run(t)
 }

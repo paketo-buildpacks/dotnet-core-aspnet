@@ -27,6 +27,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		cnbDir            string
 		entryResolver     *fakes.EntryResolver
 		dependencyManager *fakes.DependencyManager
+		symlinker         *fakes.Symlinker
 		clock             chronos.Clock
 		timeStamp         time.Time
 		planRefinery      *fakes.BuildPlanRefinery
@@ -77,6 +78,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			},
 		}
 
+		symlinker = &fakes.Symlinker{}
+
 		buffer = bytes.NewBuffer(nil)
 		logEmitter := dotnetcoreaspnet.NewLogEmitter(buffer)
 
@@ -85,7 +88,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			return timeStamp
 		})
 
-		build = dotnetcoreaspnet.Build(entryResolver, dependencyManager, planRefinery, logEmitter, clock)
+		build = dotnetcoreaspnet.Build(entryResolver, dependencyManager, planRefinery, symlinker, logEmitter, clock)
 	})
 
 	it.After(func() {
@@ -140,6 +143,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 						"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
 					},
 					LaunchEnv: packit.Environment{},
+					BuildEnv:  packit.Environment{},
 					Build:     false,
 					Launch:    true,
 					Cache:     false,
@@ -150,6 +154,21 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				},
 			},
 		}))
-		Expect(filepath.Join(workingDir, ".dotnet_root")).To(BeADirectory())
+
+		Expect(dependencyManager.ResolveCall.Receives.Path).To(Equal(filepath.Join(cnbDir, "buildpack.toml")))
+		Expect(dependencyManager.ResolveCall.Receives.Id).To(Equal("dotnet-aspnet"))
+		Expect(dependencyManager.ResolveCall.Receives.Version).To(Equal("2.5.x"))
+		Expect(dependencyManager.ResolveCall.Receives.Stack).To(Equal("some-stack"))
+
+		Expect(planRefinery.BillOfMaterialCall.CallCount).To(Equal(1))
+		Expect(planRefinery.BillOfMaterialCall.Receives.Dependency).To(Equal(postal.Dependency{ID: "dotnet-aspnet", Name: "Dotnet Core ASPNet"}))
+
+		Expect(dependencyManager.InstallCall.Receives.Dependency).To(Equal(postal.Dependency{ID: "dotnet-aspnet", Name: "Dotnet Core ASPNet"}))
+		Expect(dependencyManager.InstallCall.Receives.CnbPath).To(Equal(cnbDir))
+		Expect(dependencyManager.InstallCall.Receives.LayerPath).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
+
+		Expect(symlinker.LinkCall.CallCount).To(Equal(1))
+		Expect(symlinker.LinkCall.Receives.WorkingDir).To(Equal(workingDir))
+		Expect(symlinker.LinkCall.Receives.LayerPath).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
 	})
 }

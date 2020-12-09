@@ -20,7 +20,7 @@ func (r PlanEntryResolver) Resolve(entries []packit.BuildpackPlanEntry) packit.B
 	var (
 		priorities = map[string]int{
 			"buildpack.yml": 3,
-			"csproj":        2,
+			"*sproj":        2,
 			"":              -1,
 		}
 	)
