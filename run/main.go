@@ -16,6 +16,7 @@ func main() {
 	entryResolver := dotnetcoreaspnet.NewPlanEntryResolver(logEmitter)
 	dependencyManager := postal.NewService(cargo.NewTransport())
 	planRefinery := dotnetcoreaspnet.NewPlanRefinery()
+	dotnetRootLinker := dotnetcoreaspnet.NewDotnetRootLinker()
 
 	packit.Run(
 		dotnetcoreaspnet.Detect(buildpackYMLParser),
@@ -23,6 +24,7 @@ func main() {
 			entryResolver,
 			dependencyManager,
 			planRefinery,
+			dotnetRootLinker,
 			logEmitter,
 			chronos.DefaultClock,
 		),

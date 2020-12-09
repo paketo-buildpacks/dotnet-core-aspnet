@@ -17,7 +17,7 @@ func (dl DotnetRootLinker) Link(workingDir, layerPath string) error {
 		return err
 	}
 
-	err = os.Symlink(filepath.Join(layerPath, "dotnet-aspnetcore", "shared", "Microsoft.AspNetCore.App"), filepath.Join(workingDir, ".dotnet_root", "Microsoft.AspNetCore.App"))
+	err = os.Symlink(filepath.Join(layerPath, "shared", "Microsoft.AspNetCore.App"), filepath.Join(workingDir, ".dotnet_root", "Microsoft.AspNetCore.App"))
 
 	if err != nil {
 		return err

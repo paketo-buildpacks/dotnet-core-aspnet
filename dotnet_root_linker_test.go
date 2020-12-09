@@ -49,7 +49,7 @@ func testDotnetRootLinker(t *testing.T, context spec.G, it spec.S) {
 
 			link, err := os.Readlink(filepath.Join(workingDir, ".dotnet_root", "Microsoft.AspNetCore.App"))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(link).To(Equal(filepath.Join(layerPath, "dotnet-aspnetcore", "shared", "Microsoft.AspNetCore.App")))
+			Expect(link).To(Equal(filepath.Join(layerPath, "shared", "Microsoft.AspNetCore.App")))
 		})
 
 		context("error cases", func() {
