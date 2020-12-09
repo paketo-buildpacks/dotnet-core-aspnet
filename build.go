@@ -42,21 +42,15 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 
 		dependency, err := dependencies.Resolve(filepath.Join(context.CNBPath, "buildpack.toml"), entry.Name, version, context.Stack)
 		if err != nil {
-			panic(err)
 			return packit.BuildResult{}, err
 		}
 
 		logger.SelectedDependency(entry, dependency, clock.Now())
 
-		dotnetCoreASPNetLayer, err := context.Layers.Get("dotnet-core-aspnet")
+		aspNetLayer, err := context.Layers.Get("dotnet-core-aspnet")
 		if err != nil {
-			panic(err)
 			return packit.BuildResult{}, err
 		}
-
-		dotnetCoreASPNetLayer.Launch = entry.Metadata["launch"] == true
-		dotnetCoreASPNetLayer.Build = entry.Metadata["build"] == true
-		dotnetCoreASPNetLayer.Cache = entry.Metadata["build"] == true
 
 		bom := planRefinery.BillOfMaterial(postal.Dependency{
 			ID:      dependency.ID,
@@ -67,43 +61,54 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 			Version: dependency.Version,
 		})
 
+		cachedSHA, ok := aspNetLayer.Metadata["dependency-sha"].(string)
+		if ok && cachedSHA == dependency.SHA256 {
+			logger.Process("Reusing cached layer %s", aspNetLayer.Path)
+			logger.Break()
+
+			return packit.BuildResult{
+				Plan:   bom,
+				Layers: []packit.Layer{aspNetLayer},
+			}, nil
+		}
 		logger.Process("Executing build process")
 
-		err = dotnetCoreASPNetLayer.Reset()
+		err = aspNetLayer.Reset()
 		if err != nil {
-			panic(err)
 			return packit.BuildResult{}, err
 		}
 
+		aspNetLayer.Launch = entry.Metadata["launch"] == true
+		aspNetLayer.Build = entry.Metadata["build"] == true
+		aspNetLayer.Cache = entry.Metadata["build"] == true
+
 		logger.Subprocess("Installing Dotnet Core ASPNet %s", dependency.Version)
 		duration, err := clock.Measure(func() error {
-			return dependencies.Install(dependency, context.CNBPath, dotnetCoreASPNetLayer.Path)
+			return dependencies.Install(dependency, context.CNBPath, aspNetLayer.Path)
 		})
 		if err != nil {
-			panic(err)
 			return packit.BuildResult{}, err
 		}
 
 		logger.Action("Completed in %s", duration.Round(time.Millisecond))
 		logger.Break()
 
-		dotnetCoreASPNetLayer.Metadata = map[string]interface{}{
+		aspNetLayer.Metadata = map[string]interface{}{
 			"dependency-sha": dependency.SHA256,
 			"built_at":       clock.Now().Format(time.RFC3339Nano),
 		}
 
-		dotnetCoreASPNetLayer.SharedEnv.Override("DOTNET_ROOT", filepath.Join(context.WorkingDir, ".dotnet_root"))
-		logger.Environment(dotnetCoreASPNetLayer.SharedEnv)
+		aspNetLayer.SharedEnv.Override("DOTNET_ROOT", filepath.Join(context.WorkingDir, ".dotnet_root"))
+		logger.Environment(aspNetLayer.SharedEnv)
 
-		err = symlinker.Link(context.WorkingDir, dotnetCoreASPNetLayer.Path)
+		err = symlinker.Link(context.WorkingDir, aspNetLayer.Path)
 		if err != nil {
-			panic(err)
 			return packit.BuildResult{}, err
 		}
 
 		return packit.BuildResult{
 			Plan:   bom,
-			Layers: []packit.Layer{dotnetCoreASPNetLayer},
+			Layers: []packit.Layer{aspNetLayer},
 		}, nil
 	}
 }
