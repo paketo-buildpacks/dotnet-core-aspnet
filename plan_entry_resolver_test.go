@@ -89,6 +89,7 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(buffer.String()).To(ContainSubstring("    Candidate version sources (in priority order):"))
 			Expect(buffer.String()).To(ContainSubstring("      buildpack.yml -> \"buildpack-yml-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      *sproj        -> \"*sproj-version\""))
 			Expect(buffer.String()).To(ContainSubstring("      <unknown>     -> \"other-version\""))
 		})
 	})

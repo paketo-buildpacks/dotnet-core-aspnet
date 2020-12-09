@@ -53,7 +53,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Metadata: map[string]interface{}{
 				"version-source": "buildpack.yml",
 				"version":        "2.5.x",
-				"launch":         true,
 			},
 		}
 
@@ -70,9 +69,12 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				{
 					Name: "dotnet-aspnet",
 					Metadata: map[string]interface{}{
-						"version-source": "buildpack.yml",
-						"version":        "2.5.x",
-						"launch":         true,
+						"licenses": []string{},
+						"name":     "dotnet-aspnet-dep-name",
+						"sha256":   "dotnet-aspnet-dep-sha",
+						"stacks":   "dotnet-aspnet-dep-stacks",
+						"uri":      "dotnet-aspnet-dep-uri",
+						"version":  "2.5.x",
 					},
 				},
 			},
@@ -113,7 +115,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 						Metadata: map[string]interface{}{
 							"version-source": "buildpack.yml",
 							"version":        "2.5.x",
-							"launch":         true,
 						},
 					},
 				},
@@ -128,9 +129,12 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					{
 						Name: "dotnet-aspnet",
 						Metadata: map[string]interface{}{
-							"version-source": "buildpack.yml",
-							"version":        "2.5.x",
-							"launch":         true,
+							"licenses": []string{},
+							"name":     "dotnet-aspnet-dep-name",
+							"sha256":   "dotnet-aspnet-dep-sha",
+							"stacks":   "dotnet-aspnet-dep-stacks",
+							"uri":      "dotnet-aspnet-dep-uri",
+							"version":  "2.5.x",
 						},
 					},
 				},
@@ -145,7 +149,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					LaunchEnv: packit.Environment{},
 					BuildEnv:  packit.Environment{},
 					Build:     false,
-					Launch:    true,
+					Launch:    false,
 					Cache:     false,
 					Metadata: map[string]interface{}{
 						"dependency-sha": "",
