@@ -1,5 +1,5 @@
 [[requires]]
-  name = "dotnet-aspnet"
+  name = "dotnet-aspnetcore"
 
   [requires.metadata]
     launch = true

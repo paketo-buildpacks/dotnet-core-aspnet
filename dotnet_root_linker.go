@@ -12,13 +12,12 @@ func NewDotnetRootLinker() DotnetRootLinker {
 }
 
 func (dl DotnetRootLinker) Link(workingDir, layerPath string) error {
-	err := os.MkdirAll(filepath.Join(workingDir, ".dotnet_root"), os.ModePerm)
+	err := os.MkdirAll(filepath.Join(workingDir, ".dotnet_root", "shared"), os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	err = os.Symlink(filepath.Join(layerPath, "shared", "Microsoft.AspNetCore.App"), filepath.Join(workingDir, ".dotnet_root", "Microsoft.AspNetCore.App"))
-
+	err = os.Symlink(filepath.Join(layerPath, "shared", "Microsoft.AspNetCore.App"), filepath.Join(workingDir, ".dotnet_root", "shared", "Microsoft.AspNetCore.App"))
 	if err != nil {
 		return err
 	}

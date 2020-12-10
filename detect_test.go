@@ -33,14 +33,14 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 	})
 
 	context("no version requirement", func() {
-		it("detects with a plan that provides dotnet-aspnet", func() {
+		it("detects with a plan that provides dotnet-aspnetcore", func() {
 			result, err := detect(packit.DetectContext{
 				WorkingDir: workingDir,
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(result.Plan).To(Equal(packit.BuildPlan{
 				Provides: []packit.BuildPlanProvision{
-					{Name: "dotnet-aspnet"},
+					{Name: "dotnet-aspnetcore"},
 				},
 			}))
 		})
@@ -51,7 +51,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			buildpackYMLParser.ParseVersionCall.Returns.Version = "1.2.3"
 		})
 
-		it("provides dotnet-aspnet and requires specific version of dotnet-aspnet", func() {
+		it("provides dotnet-aspnetcore and requires specific version of dotnet-aspnetcore", func() {
 			result, err := detect(packit.DetectContext{
 				WorkingDir: workingDir,
 			})
@@ -59,12 +59,12 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(result.Plan).To(Equal(packit.BuildPlan{
 				Provides: []packit.BuildPlanProvision{
 					{
-						Name: "dotnet-aspnet",
+						Name: "dotnet-aspnetcore",
 					},
 				},
 				Requires: []packit.BuildPlanRequirement{
 					{
-						Name: "dotnet-aspnet",
+						Name: "dotnet-aspnetcore",
 						Metadata: map[string]interface{}{
 							"version-source": "buildpack.yml",
 							"version":        "1.2.3",

@@ -28,13 +28,13 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 		it("resolves the best plan entry", func() {
 			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
 				{
-					Name: "dotnet-core-aspnet",
+					Name: "dotnet-aspnetcore",
 					Metadata: map[string]interface{}{
 						"version": "other-version",
 					},
 				},
 				{
-					Name: "dotnet-core-aspnet",
+					Name: "dotnet-aspnetcore",
 					Metadata: map[string]interface{}{
 						"version-source": "buildpack.yml",
 						"version":        "buildpack-yml-version",
@@ -42,7 +42,7 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 				},
 			})
 			Expect(entry).To(Equal(packit.BuildpackPlanEntry{
-				Name: "dotnet-core-aspnet",
+				Name: "dotnet-aspnetcore",
 				Metadata: map[string]interface{}{
 					"version-source": "buildpack.yml",
 					"version":        "buildpack-yml-version",
@@ -59,20 +59,20 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 		it("resolves the best plan entry", func() {
 			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
 				{
-					Name: "dotnet-core-aspnet",
+					Name: "dotnet-aspnetcore",
 					Metadata: map[string]interface{}{
 						"version": "other-version",
 					},
 				},
 				{
-					Name: "dotnet-core-aspnet",
+					Name: "dotnet-aspnetcore",
 					Metadata: map[string]interface{}{
 						"version-source": "*sproj",
 						"version":        "*sproj-version",
 					},
 				},
 				{
-					Name: "dotnet-core-aspnet",
+					Name: "dotnet-aspnetcore",
 					Metadata: map[string]interface{}{
 						"version-source": "buildpack.yml",
 						"version":        "buildpack-yml-version",
@@ -80,7 +80,7 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 				},
 			})
 			Expect(entry).To(Equal(packit.BuildpackPlanEntry{
-				Name: "dotnet-core-aspnet",
+				Name: "dotnet-aspnetcore",
 				Metadata: map[string]interface{}{
 					"version-source": "buildpack.yml",
 					"version":        "buildpack-yml-version",
@@ -94,26 +94,65 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 		})
 	})
 
+	context("when buildpack.yml and RUNTIME_VERSION entries are included", func() {
+		it("resolves the best plan entry", func() {
+			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version": "other-version",
+					},
+				},
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version-source": "RUNTIME_VERSION",
+						"version":        "runtime-version",
+					},
+				},
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version-source": "buildpack.yml",
+						"version":        "buildpack-yml-version",
+					},
+				},
+			})
+			Expect(entry).To(Equal(packit.BuildpackPlanEntry{
+				Name: "dotnet-aspnetcore",
+				Metadata: map[string]interface{}{
+					"version-source": "RUNTIME_VERSION",
+					"version":        "runtime-version",
+				},
+			}))
+
+			Expect(buffer.String()).To(ContainSubstring("    Candidate version sources (in priority order):"))
+			Expect(buffer.String()).To(ContainSubstring("      RUNTIME_VERSION -> \"runtime-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      buildpack.yml   -> \"buildpack-yml-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      <unknown>       -> \"other-version\""))
+		})
+	})
+
 	context("when entry flags differ", func() {
 		context("OR's them together on best plan entry", func() {
 			it("has all flags", func() {
 				entry := resolver.Resolve([]packit.BuildpackPlanEntry{
 					{
-						Name: "dotnet-core-aspnet",
+						Name: "dotnet-aspnetcore",
 						Metadata: map[string]interface{}{
 							"version-source": "buildpack.yml",
 							"version":        "buildpack-yml-version",
 						},
 					},
 					{
-						Name: "dotnet-core-aspnet",
+						Name: "dotnet-aspnetcore",
 						Metadata: map[string]interface{}{
 							"build": true,
 						},
 					},
 				})
 				Expect(entry).To(Equal(packit.BuildpackPlanEntry{
-					Name: "dotnet-core-aspnet",
+					Name: "dotnet-aspnetcore",
 					Metadata: map[string]interface{}{
 						"version-source": "buildpack.yml",
 						"version":        "buildpack-yml-version",
@@ -128,14 +167,14 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 		it("resolves the best plan entry", func() {
 			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
 				{
-					Name: "dotnet-core-aspnet",
+					Name: "dotnet-aspnetcore",
 					Metadata: map[string]interface{}{
 						"version": "other-version",
 					},
 				},
 			})
 			Expect(entry).To(Equal(packit.BuildpackPlanEntry{
-				Name: "dotnet-core-aspnet",
+				Name: "dotnet-aspnetcore",
 				Metadata: map[string]interface{}{
 					"version": "other-version",
 				},

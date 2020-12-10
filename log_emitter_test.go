@@ -34,23 +34,23 @@ func testLogEmitter(t *testing.T, context spec.G, it spec.S) {
 				},
 			}
 			dependency := postal.Dependency{
-				Name:    "Dotnet Core ASPNet",
+				ID:      "dotnet-aspnetcore",
 				Version: "some-version",
 			}
 
 			emitter.SelectedDependency(entry, dependency, time.Now())
-			Expect(buffer.String()).To(Equal("    Selected Dotnet Core ASPNet version (using some-source): some-version\n\n"))
+			Expect(buffer.String()).To(Equal("    Selected dotnet-aspnetcore version (using some-source): some-version\n\n"))
 		})
 
 		context("when the version source is missing", func() {
 			it("prints details about the selected dependency", func() {
 				dependency := postal.Dependency{
-					Name:    "Dotnet Core ASPNet",
+					ID:      "dotnet-aspnetcore",
 					Version: "some-version",
 				}
 
 				emitter.SelectedDependency(packit.BuildpackPlanEntry{}, dependency, time.Now())
-				Expect(buffer.String()).To(Equal("    Selected Dotnet Core ASPNet version (using <unknown>): some-version\n\n"))
+				Expect(buffer.String()).To(Equal("    Selected dotnet-aspnetcore version (using <unknown>): some-version\n\n"))
 			})
 		})
 
@@ -65,14 +65,14 @@ func testLogEmitter(t *testing.T, context spec.G, it spec.S) {
 				}
 				dependency := postal.Dependency{
 					DeprecationDate: deprecationDate,
-					Name:            "Dotnet Core ASPNet",
+					ID:              "dotnet-aspnetcore",
 					Version:         "some-version",
 				}
 
 				emitter.SelectedDependency(entry, dependency, now)
-				Expect(buffer.String()).To(ContainSubstring("    Selected Dotnet Core ASPNet version (using some-source): some-version\n"))
-				Expect(buffer.String()).To(ContainSubstring("      Version some-version of Dotnet Core ASPNet will be deprecated after 2021-04-01.\n"))
-				Expect(buffer.String()).To(ContainSubstring("      Migrate your application to a supported version of Dotnet Core ASPNet before this time.\n\n"))
+				Expect(buffer.String()).To(ContainSubstring("    Selected dotnet-aspnetcore version (using some-source): some-version\n"))
+				Expect(buffer.String()).To(ContainSubstring("      Version some-version of dotnet-aspnetcore will be deprecated after 2021-04-01.\n"))
+				Expect(buffer.String()).To(ContainSubstring("      Migrate your application to a supported version of dotnet-aspnetcore before this time.\n\n"))
 			})
 		})
 
@@ -87,14 +87,14 @@ func testLogEmitter(t *testing.T, context spec.G, it spec.S) {
 				}
 				dependency := postal.Dependency{
 					DeprecationDate: deprecationDate,
-					Name:            "Dotnet Core ASPNet",
+					ID:              "dotnet-aspnetcore",
 					Version:         "some-version",
 				}
 
 				emitter.SelectedDependency(entry, dependency, now)
-				Expect(buffer.String()).To(ContainSubstring("    Selected Dotnet Core ASPNet version (using some-source): some-version\n"))
-				Expect(buffer.String()).To(ContainSubstring("      Version some-version of Dotnet Core ASPNet is deprecated.\n"))
-				Expect(buffer.String()).To(ContainSubstring("      Migrate your application to a supported version of Dotnet Core ASPNet.\n\n"))
+				Expect(buffer.String()).To(ContainSubstring("    Selected dotnet-aspnetcore version (using some-source): some-version\n"))
+				Expect(buffer.String()).To(ContainSubstring("      Version some-version of dotnet-aspnetcore is deprecated.\n"))
+				Expect(buffer.String()).To(ContainSubstring("      Migrate your application to a supported version of dotnet-aspnetcore.\n\n"))
 			})
 		})
 
@@ -109,14 +109,14 @@ func testLogEmitter(t *testing.T, context spec.G, it spec.S) {
 				}
 				dependency := postal.Dependency{
 					DeprecationDate: deprecationDate,
-					Name:            "Dotnet Core ASPNet",
+					ID:              "dotnet-aspnetcore",
 					Version:         "some-version",
 				}
 
 				emitter.SelectedDependency(entry, dependency, now)
-				Expect(buffer.String()).To(ContainSubstring("    Selected Dotnet Core ASPNet version (using some-source): some-version\n"))
-				Expect(buffer.String()).To(ContainSubstring("      Version some-version of Dotnet Core ASPNet is deprecated.\n"))
-				Expect(buffer.String()).To(ContainSubstring("      Migrate your application to a supported version of Dotnet Core ASPNet.\n\n"))
+				Expect(buffer.String()).To(ContainSubstring("    Selected dotnet-aspnetcore version (using some-source): some-version\n"))
+				Expect(buffer.String()).To(ContainSubstring("      Version some-version of dotnet-aspnetcore is deprecated.\n"))
+				Expect(buffer.String()).To(ContainSubstring("      Migrate your application to a supported version of dotnet-aspnetcore.\n\n"))
 			})
 		})
 	})
@@ -125,27 +125,27 @@ func testLogEmitter(t *testing.T, context spec.G, it spec.S) {
 		it("prints a formatted map of version source inputs", func() {
 			emitter.Candidates([]packit.BuildpackPlanEntry{
 				{
-					Name: "dotnet-aspnet",
+					Name: "dotnet-aspnetcore",
 					Metadata: map[string]interface{}{
 						"version-source": "package.json",
 						"version":        "package-json-version",
 					},
 				},
 				{
-					Name: "dotnet-aspnet",
+					Name: "dotnet-aspnetcore",
 					Metadata: map[string]interface{}{
 						"version": "other-version",
 					},
 				},
 				{
-					Name: "dotnet-aspnet",
+					Name: "dotnet-aspnetcore",
 					Metadata: map[string]interface{}{
 						"version-source": "buildpack.yml",
 						"version":        "buildpack-yml-version",
 					},
 				},
 				{
-					Name: "dotnet-aspnet",
+					Name: "dotnet-aspnetcore",
 				},
 			})
 

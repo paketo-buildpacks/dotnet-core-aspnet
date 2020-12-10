@@ -10,7 +10,7 @@ api = "0.2"
   pre-package = "./scripts/build.sh"
 
   [[metadata.dependencies]]
-    id = "dotnet-aspnet"
+    id = "dotnet-aspnetcore"
     sha256 = "66e1b0f28c3603ae4ac1f120da0b23f40947e08eb7ed8e898549c1b2f4216a73"
     source = "https://download.visualstudio.microsoft.com/download/pr/c1798274-4f4e-4e5b-8337-cb477add793c/2ab1c7f92fe497e07304b0b25c5f7845/aspnetcore-runtime-2.1.22-linux-x64.tar.gz"
     source_sha256 = "053cb445608296a5c6d988980bdbfe1ee36602d1445fd67835d29eceab916ef0"
@@ -19,7 +19,7 @@ api = "0.2"
     version = "2.1.22"
 
   [[metadata.dependencies]]
-    id = "dotnet-aspnet"
+    id = "dotnet-aspnetcore"
     sha256 = "b94ea8672b944f550602d127a9369831d617d38a54e3c4db8e1a9523190f0657"
     source = "https://download.visualstudio.microsoft.com/download/pr/3422a123-3f37-4544-b0ed-e3922b50e1b0/c34c607ba18a67763bacded434607c56/aspnetcore-runtime-2.1.23-linux-x64.tar.gz"
     source_sha256 = "d13d536693c2d40c1237e1831c302271a497ea1576f8a1aae5676f6442e9a6b3"
@@ -28,7 +28,7 @@ api = "0.2"
     version = "2.1.23"
 
   [[metadata.dependencies]]
-    id = "dotnet-aspnet"
+    id = "dotnet-aspnetcore"
     sha256 = "9e12b8a2ab0039716f9c5ac4883a5ade606e438af968062286379d38566c0126"
     source = "https://download.visualstudio.microsoft.com/download/pr/933b0cb8-3494-4ca4-8c9e-1bcfd3568ab0/8704eef073efdfecdaaad4a18beb05ac/aspnetcore-runtime-3.1.9-linux-x64.tar.gz"
     source_sha256 = "b47a882277d4ef42d3cfebbd1f334559b8345fe8a8b05e2a7d83a37ffe5f775e"
@@ -37,7 +37,7 @@ api = "0.2"
     version = "3.1.9"
 
   [[metadata.dependencies]]
-    id = "dotnet-aspnet"
+    id = "dotnet-aspnetcore"
     sha256 = "266c2cffb5263bfcb3ef6d5e25c2fe5e2969fe219958ef7a885e7b8c4abdddcd"
     source = "https://download.visualstudio.microsoft.com/download/pr/eca743d3-030f-4b1b-bd15-3573091f1c02/f3e464abc31deb7bc2747ed6cc1a8f5c/aspnetcore-runtime-3.1.10-linux-x64.tar.gz"
     source_sha256 = "b58376e76c68f03e142ac9a771b782cb7be926a16e920d83c711903b82608f3a"
@@ -46,7 +46,7 @@ api = "0.2"
     version = "3.1.10"
 
   [[metadata.dependencies]]
-    id = "dotnet-aspnet"
+    id = "dotnet-aspnetcore"
     sha256 = "901daa2c6f528b7d355064aaab3bd98fc1e63e134ae43d72cecd72c55325ce5a"
     source = "https://download.visualstudio.microsoft.com/download/pr/ff9a5b2e-704b-4ff2-bf2f-4bac619915af/e771f72b10ad5160ab5f3d70c287e948/aspnetcore-runtime-5.0.0-linux-x64.tar.gz"
     source_sha256 = "de6ab398bd0c7757c505a25d6eaf560d8f4b3c3a66b0462d6e8afff97ac5e2d1"

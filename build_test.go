@@ -50,7 +50,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		entryResolver = &fakes.EntryResolver{}
 		entryResolver.ResolveCall.Returns.BuildpackPlanEntry = packit.BuildpackPlanEntry{
-			Name: "dotnet-aspnet",
+			Name: "dotnet-aspnetcore",
 			Metadata: map[string]interface{}{
 				"version-source": "buildpack.yml",
 				"version":        "2.5.x",
@@ -59,7 +59,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		dependencyManager = &fakes.DependencyManager{}
 		dependencyManager.ResolveCall.Returns.Dependency = postal.Dependency{
-			ID:   "dotnet-aspnet",
+			ID:   "dotnet-aspnetcore",
 			Name: "Dotnet Core ASPNet",
 		}
 
@@ -68,13 +68,13 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		planRefinery.BillOfMaterialCall.Returns.BuildpackPlan = packit.BuildpackPlan{
 			Entries: []packit.BuildpackPlanEntry{
 				{
-					Name: "dotnet-aspnet",
+					Name: "dotnet-aspnetcore",
 					Metadata: map[string]interface{}{
 						"licenses": []string{},
-						"name":     "dotnet-aspnet-dep-name",
-						"sha256":   "dotnet-aspnet-dep-sha",
-						"stacks":   "dotnet-aspnet-dep-stacks",
-						"uri":      "dotnet-aspnet-dep-uri",
+						"name":     "dotnet-aspnetcore-dep-name",
+						"sha256":   "dotnet-aspnetcore-dep-sha",
+						"stacks":   "dotnet-aspnetcore-dep-stacks",
+						"uri":      "dotnet-aspnetcore-dep-uri",
 						"version":  "2.5.x",
 					},
 				},
@@ -112,7 +112,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Plan: packit.BuildpackPlan{
 				Entries: []packit.BuildpackPlanEntry{
 					{
-						Name: "dotnet-aspnet",
+						Name: "dotnet-aspnetcore",
 						Metadata: map[string]interface{}{
 							"version-source": "buildpack.yml",
 							"version":        "2.5.x",
@@ -128,13 +128,13 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Plan: packit.BuildpackPlan{
 				Entries: []packit.BuildpackPlanEntry{
 					{
-						Name: "dotnet-aspnet",
+						Name: "dotnet-aspnetcore",
 						Metadata: map[string]interface{}{
 							"licenses": []string{},
-							"name":     "dotnet-aspnet-dep-name",
-							"sha256":   "dotnet-aspnet-dep-sha",
-							"stacks":   "dotnet-aspnet-dep-stacks",
-							"uri":      "dotnet-aspnet-dep-uri",
+							"name":     "dotnet-aspnetcore-dep-name",
+							"sha256":   "dotnet-aspnetcore-dep-sha",
+							"stacks":   "dotnet-aspnetcore-dep-stacks",
+							"uri":      "dotnet-aspnetcore-dep-uri",
 							"version":  "2.5.x",
 						},
 					},
@@ -161,14 +161,14 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		}))
 
 		Expect(dependencyManager.ResolveCall.Receives.Path).To(Equal(filepath.Join(cnbDir, "buildpack.toml")))
-		Expect(dependencyManager.ResolveCall.Receives.Id).To(Equal("dotnet-aspnet"))
+		Expect(dependencyManager.ResolveCall.Receives.Id).To(Equal("dotnet-aspnetcore"))
 		Expect(dependencyManager.ResolveCall.Receives.Version).To(Equal("2.5.x"))
 		Expect(dependencyManager.ResolveCall.Receives.Stack).To(Equal("some-stack"))
 
 		Expect(planRefinery.BillOfMaterialCall.CallCount).To(Equal(1))
-		Expect(planRefinery.BillOfMaterialCall.Receives.Dependency).To(Equal(postal.Dependency{ID: "dotnet-aspnet", Name: "Dotnet Core ASPNet"}))
+		Expect(planRefinery.BillOfMaterialCall.Receives.Dependency).To(Equal(postal.Dependency{ID: "dotnet-aspnetcore", Name: "Dotnet Core ASPNet"}))
 
-		Expect(dependencyManager.InstallCall.Receives.Dependency).To(Equal(postal.Dependency{ID: "dotnet-aspnet", Name: "Dotnet Core ASPNet"}))
+		Expect(dependencyManager.InstallCall.Receives.Dependency).To(Equal(postal.Dependency{ID: "dotnet-aspnetcore", Name: "Dotnet Core ASPNet"}))
 		Expect(dependencyManager.InstallCall.Receives.CnbPath).To(Equal(cnbDir))
 		Expect(dependencyManager.InstallCall.Receives.LayerPath).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
 
@@ -177,10 +177,87 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(symlinker.LinkCall.Receives.LayerPath).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
 	})
 
+	context("when the 'RUNTIME_VERSION' env variable is set", func() {
+		it.Before(func() {
+			Expect(os.Setenv("RUNTIME_VERSION", "some-version")).To(Succeed())
+		})
+		it.After(func() {
+			Expect(os.Unsetenv("RUNTIME_VERSION")).To(Succeed())
+		})
+		it("doesnt call the entry resolver", func() {
+			result, err := build(packit.BuildContext{
+				WorkingDir: workingDir,
+				CNBPath:    cnbDir,
+				Stack:      "some-stack",
+				BuildpackInfo: packit.BuildpackInfo{
+					Name:    "Some Buildpack",
+					Version: "some-version",
+				},
+				Plan: packit.BuildpackPlan{
+					Entries: []packit.BuildpackPlanEntry{
+						{
+							Name: "dotnet-aspnetcore",
+							Metadata: map[string]interface{}{
+								"version-source": "buildpack.yml",
+								"version":        "2.5.x",
+							},
+						},
+					},
+				},
+				Layers: packit.Layers{Path: layersDir},
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(result).To(Equal(packit.BuildResult{
+				Plan: packit.BuildpackPlan{
+					Entries: []packit.BuildpackPlanEntry{
+						{
+							Name: "dotnet-aspnetcore",
+							Metadata: map[string]interface{}{
+								"licenses": []string{},
+								"name":     "dotnet-aspnetcore-dep-name",
+								"sha256":   "dotnet-aspnetcore-dep-sha",
+								"stacks":   "dotnet-aspnetcore-dep-stacks",
+								"uri":      "dotnet-aspnetcore-dep-uri",
+								"version":  "2.5.x",
+							},
+						},
+					},
+				},
+				Layers: []packit.Layer{
+					{
+						Name: "dotnet-core-aspnet",
+						Path: filepath.Join(layersDir, "dotnet-core-aspnet"),
+						SharedEnv: packit.Environment{
+							"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
+						},
+						LaunchEnv: packit.Environment{},
+						BuildEnv:  packit.Environment{},
+						Build:     false,
+						Launch:    false,
+						Cache:     false,
+						Metadata: map[string]interface{}{
+							"dependency-sha": "",
+							"built_at":       timeStamp.Format(time.RFC3339Nano),
+						},
+					},
+				},
+			}))
+
+			Expect(entryResolver.ResolveCall.Receives.BuildpackPlanEntrySlice).To(ContainElement(packit.BuildpackPlanEntry{
+				Name: "dotnet-aspnetcore",
+				Metadata: map[string]interface{}{
+					"version":        "some-version",
+					"version-source": "RUNTIME_VERSION",
+				},
+			}))
+		})
+	}, spec.Sequential())
+
 	context("when the build plan entry include build, launch flags", func() {
 		it.Before(func() {
 			entryResolver.ResolveCall.Returns.BuildpackPlanEntry = packit.BuildpackPlanEntry{
-				Name: "dotnet-aspnet",
+				Name: "dotnet-aspnetcore",
 				Metadata: map[string]interface{}{
 					"version-source": "buildpack.yml",
 					"version":        "2.5.x",
@@ -202,7 +279,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Plan: packit.BuildpackPlan{
 					Entries: []packit.BuildpackPlanEntry{
 						{
-							Name: "dotnet-aspnet",
+							Name: "dotnet-aspnetcore",
 							Metadata: map[string]interface{}{
 								"version-source": "buildpack.yml",
 								"version":        "2.5.x",
@@ -220,13 +297,13 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Plan: packit.BuildpackPlan{
 					Entries: []packit.BuildpackPlanEntry{
 						{
-							Name: "dotnet-aspnet",
+							Name: "dotnet-aspnetcore",
 							Metadata: map[string]interface{}{
 								"licenses": []string{},
-								"name":     "dotnet-aspnet-dep-name",
-								"sha256":   "dotnet-aspnet-dep-sha",
-								"stacks":   "dotnet-aspnet-dep-stacks",
-								"uri":      "dotnet-aspnet-dep-uri",
+								"name":     "dotnet-aspnetcore-dep-name",
+								"sha256":   "dotnet-aspnetcore-dep-sha",
+								"stacks":   "dotnet-aspnetcore-dep-stacks",
+								"uri":      "dotnet-aspnetcore-dep-uri",
 								"version":  "2.5.x",
 							},
 						},
@@ -259,7 +336,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			planRefinery.BillOfMaterialCall.Returns.BuildpackPlan = packit.BuildpackPlan{
 				Entries: []packit.BuildpackPlanEntry{
 					{
-						Name: "dotnet-aspnet",
+						Name: "dotnet-aspnetcore",
 						Metadata: map[string]interface{}{
 							"some-key": "some-value",
 						},
@@ -279,7 +356,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Plan: packit.BuildpackPlan{
 					Entries: []packit.BuildpackPlanEntry{
 						{
-							Name: "dotnet-aspnet",
+							Name: "dotnet-aspnetcore",
 							Metadata: map[string]interface{}{
 								"version-source": "buildpack.yml",
 								"version":        "2.5.x",
@@ -295,7 +372,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Plan: packit.BuildpackPlan{
 					Entries: []packit.BuildpackPlanEntry{
 						{
-							Name: "dotnet-aspnet",
+							Name: "dotnet-aspnetcore",
 							Metadata: map[string]interface{}{
 								"some-key": "some-value",
 							},
@@ -330,7 +407,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 
 			dependencyManager.ResolveCall.Returns.Dependency = postal.Dependency{
-				Name:   "Dotnet Core ASPNet",
+				ID:     "dotnet-aspnetcore",
 				SHA256: "some-sha",
 			}
 		})
@@ -346,7 +423,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Plan: packit.BuildpackPlan{
 					Entries: []packit.BuildpackPlanEntry{
 						{
-							Name: "dotnet-aspnet",
+							Name: "dotnet-aspnetcore",
 							Metadata: map[string]interface{}{
 								"version":        "2.5.x",
 								"version-source": "buildpack.yml",
@@ -360,7 +437,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(planRefinery.BillOfMaterialCall.CallCount).To(Equal(1))
 			Expect(planRefinery.BillOfMaterialCall.Receives.Dependency).To(Equal(postal.Dependency{
-				Name:   "Dotnet Core ASPNet",
+				ID:     "dotnet-aspnetcore",
 				SHA256: "some-sha",
 			}))
 
@@ -368,7 +445,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(buffer.String()).To(ContainSubstring("Some Buildpack some-version"))
 			Expect(buffer.String()).To(ContainSubstring("Resolving Dotnet Core ASPNet version"))
-			Expect(buffer.String()).To(ContainSubstring("Selected Dotnet Core ASPNet version (using buildpack.yml): "))
+			Expect(buffer.String()).To(ContainSubstring("Selected dotnet-aspnetcore version (using buildpack.yml): "))
 			Expect(buffer.String()).To(ContainSubstring("Reusing cached layer"))
 			Expect(buffer.String()).ToNot(ContainSubstring("Executing build process"))
 		})
@@ -385,7 +462,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					CNBPath: cnbDir,
 					Plan: packit.BuildpackPlan{
 						Entries: []packit.BuildpackPlanEntry{
-							{Name: "dotnet-aspnet"},
+							{Name: "dotnet-aspnetcore"},
 						},
 					},
 					Layers: packit.Layers{Path: layersDir},
@@ -406,7 +483,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					CNBPath: cnbDir,
 					Plan: packit.BuildpackPlan{
 						Entries: []packit.BuildpackPlanEntry{
-							{Name: "dotnet-aspnet"},
+							{Name: "dotnet-aspnetcore"},
 						},
 					},
 					Layers: packit.Layers{Path: layersDir},
@@ -431,7 +508,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					CNBPath: cnbDir,
 					Plan: packit.BuildpackPlan{
 						Entries: []packit.BuildpackPlanEntry{
-							{Name: "dotnet-aspnet"},
+							{Name: "dotnet-aspnetcore"},
 						},
 					},
 					Layers: packit.Layers{Path: layersDir},
@@ -451,7 +528,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					CNBPath: cnbDir,
 					Plan: packit.BuildpackPlan{
 						Entries: []packit.BuildpackPlanEntry{
-							{Name: "dotnet-aspnet"},
+							{Name: "dotnet-aspnetcore"},
 						},
 					},
 					Layers: packit.Layers{Path: layersDir},
@@ -471,7 +548,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					CNBPath: cnbDir,
 					Plan: packit.BuildpackPlan{
 						Entries: []packit.BuildpackPlanEntry{
-							{Name: "dotnet-aspnet"},
+							{Name: "dotnet-aspnetcore"},
 						},
 					},
 					Layers: packit.Layers{Path: layersDir},

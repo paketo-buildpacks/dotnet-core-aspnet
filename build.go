@@ -1,6 +1,7 @@
 package dotnetcoreaspnet
 
 import (
+	"os"
 	"path/filepath"
 	"time"
 
@@ -35,8 +36,16 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
 		logger.Process("Resolving Dotnet Core ASPNet version")
 
-		// if RUNTIME_VERSION env var set,
-		// then use it and don't look at the build plan values.
+		if v, ok := os.LookupEnv("RUNTIME_VERSION"); ok {
+			context.Plan.Entries = append(context.Plan.Entries, packit.BuildpackPlanEntry{
+				Name: "dotnet-aspnetcore",
+				Metadata: map[string]interface{}{
+					"version":        v,
+					"version-source": "RUNTIME_VERSION",
+				},
+			})
+		}
+
 		entry := entries.Resolve(context.Plan.Entries)
 		version, _ := entry.Metadata["version"].(string)
 
