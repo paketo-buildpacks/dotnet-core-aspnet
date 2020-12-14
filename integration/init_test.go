@@ -18,8 +18,8 @@ import (
 var (
 	buildpack          string
 	buildPlanBuildpack string
-	// offlineBuildpack   string
-	buildpackInfo struct {
+	offlineBuildpack   string
+	buildpackInfo      struct {
 		Buildpack struct {
 			ID   string
 			Name string
@@ -56,11 +56,11 @@ func TestIntegration(t *testing.T) {
 		Execute(root)
 	Expect(err).NotTo(HaveOccurred())
 
-	// offlineBuildpack, err = buildpackStore.Get.
-	// 	WithOfflineDependencies().
-	// 	WithVersion("1.2.3").
-	// 	Execute(root)
-	// Expect(err).NotTo(HaveOccurred())
+	offlineBuildpack, err = buildpackStore.Get.
+		WithOfflineDependencies().
+		WithVersion("1.2.3").
+		Execute(root)
+	Expect(err).NotTo(HaveOccurred())
 
 	buildPlanBuildpack, err = buildpackStore.Get.
 		Execute(config.BuildPlan)
@@ -70,6 +70,7 @@ func TestIntegration(t *testing.T) {
 
 	suite := spec.New("Integration", spec.Report(report.Terminal{}), spec.Parallel())
 	suite("Default", testDefault)
-	// suite("Offline", testOffline)
+	suite("Offline", testOffline)
+	suite("LayerReuse", testLayerReuse)
 	suite.Run(t)
 }

@@ -6,7 +6,7 @@ api = "0.2"
   homepage = "https://github.com/paketo-buildpacks/dotnet-core-aspnet"
 
 [metadata]
-  include-files = ["bin/build", "bin/detect", "bin/run", "buildpack.toml", "go.mod", "go.sum"]
+  include-files = ["bin/build", "bin/detect", "bin/run", "buildpack.toml"]
   pre-package = "./scripts/build.sh"
 
   [[metadata.dependencies]]

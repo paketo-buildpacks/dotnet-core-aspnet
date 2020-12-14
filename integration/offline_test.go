@@ -11,10 +11,9 @@ import (
 	"github.com/sclevine/spec"
 
 	. "github.com/onsi/gomega"
-	. "github.com/paketo-buildpacks/occam/matchers"
 )
 
-func testDefault(t *testing.T, context spec.G, it spec.S) {
+func testOffline(t *testing.T, context spec.G, it spec.S) {
 	var (
 		Expect     = NewWithT(t).Expect
 		Eventually = NewWithT(t).Eventually
@@ -57,27 +56,12 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			image, logs, err = pack.WithNoColor().Build.
 				WithPullPolicy("never").
 				WithBuildpacks(
-					buildpack,
+					offlineBuildpack,
 					buildPlanBuildpack,
 				).
+				WithNetwork("none").
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
-
-			Expect(logs).To(ContainLines(
-				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
-				"  Resolving Dotnet Core ASPNet version",
-				"    Candidate version sources (in priority order):",
-				"      <unknown> -> \"*\"",
-				"",
-				MatchRegexp(`    Selected dotnet-aspnetcore version \(using <unknown>\): \d+\.\d+\.\d+`),
-				"",
-				"  Executing build process",
-				MatchRegexp(`    Installing Dotnet Core ASPNet \d+\.\d+\.\d+`),
-				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
-				"",
-				"  Configuring environment",
-				`    DOTNET_ROOT -> "/workspace/.dotnet_root"`,
-			))
 
 			container, err = docker.Container.Run.
 				WithCommand(
