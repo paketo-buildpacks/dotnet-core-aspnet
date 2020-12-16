@@ -3,12 +3,11 @@ api = "0.2"
 [buildpack]
   id = "paketo-buildpacks/dotnet-core-aspnet"
   name = "Paketo ASP.Net Core Buildpack"
-  version = "{{ .Version }}"
   homepage = "https://github.com/paketo-buildpacks/dotnet-core-aspnet"
 
 [metadata]
-  include_files = ["bin/build", "bin/detect", "buildpack.toml", "go.mod", "go.sum"]
-  pre_package = "./scripts/build.sh"
+  include-files = ["bin/build", "bin/detect", "bin/run", "buildpack.toml"]
+  pre-package = "./scripts/build.sh"
 
   [[metadata.dependencies]]
     id = "dotnet-aspnetcore"
