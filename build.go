@@ -82,7 +82,7 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 		}
 		logger.Process("Executing build process")
 
-		err = aspNetLayer.Reset()
+		aspNetLayer, err = aspNetLayer.Reset()
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
