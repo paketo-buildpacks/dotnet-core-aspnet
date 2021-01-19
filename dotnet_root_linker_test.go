@@ -29,6 +29,9 @@ func testDotnetRootLinker(t *testing.T, context spec.G, it spec.S) {
 		layerPath, err = ioutil.TempDir("", "layer-path")
 		Expect(err).NotTo(HaveOccurred())
 
+		Expect(os.MkdirAll(filepath.Join(layerPath, "shared", "dir1"), os.ModePerm)).To(Succeed())
+		Expect(os.MkdirAll(filepath.Join(layerPath, "shared", "dir2"), os.ModePerm)).To(Succeed())
+
 		dotnetLinker = dotnetcoreaspnet.NewDotnetRootLinker()
 	})
 
@@ -43,13 +46,21 @@ func testDotnetRootLinker(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(filepath.Join(workingDir, ".dotnet_root")).To(BeADirectory())
 
-			fi, err := os.Lstat(filepath.Join(workingDir, ".dotnet_root", "shared", "Microsoft.AspNetCore.App"))
+			fi, err := os.Lstat(filepath.Join(workingDir, ".dotnet_root", "shared", "dir1"))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fi.Mode() & os.ModeSymlink).ToNot(BeZero())
 
-			link, err := os.Readlink(filepath.Join(workingDir, ".dotnet_root", "shared", "Microsoft.AspNetCore.App"))
+			link, err := os.Readlink(filepath.Join(workingDir, ".dotnet_root", "shared", "dir1"))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(link).To(Equal(filepath.Join(layerPath, "shared", "Microsoft.AspNetCore.App")))
+			Expect(link).To(Equal(filepath.Join(layerPath, "shared", "dir1")))
+
+			fi, err = os.Lstat(filepath.Join(workingDir, ".dotnet_root", "shared", "dir2"))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(fi.Mode() & os.ModeSymlink).ToNot(BeZero())
+
+			link, err = os.Readlink(filepath.Join(workingDir, ".dotnet_root", "shared", "dir2"))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(link).To(Equal(filepath.Join(layerPath, "shared", "dir2")))
 		})
 
 		context("error cases", func() {
@@ -64,15 +75,23 @@ func testDotnetRootLinker(t *testing.T, context spec.G, it spec.S) {
 				})
 			})
 
+			context("when there is a bad file glob", func() {
+				it("returns an error", func() {
+					err := dotnetLinker.Link(workingDir, `\`)
+					Expect(err).To(HaveOccurred())
+					Expect(err).To(MatchError(ContainSubstring("syntax error in pattern")))
+				})
+			})
+
 			context("when the symlink can not be created", func() {
 				it.Before(func() {
-					Expect(os.MkdirAll(filepath.Join(workingDir, ".dotnet_root"), os.ModePerm)).To(Succeed())
-					Expect(os.Chmod(filepath.Join(workingDir, ".dotnet_root"), 0000)).To(Succeed())
+					Expect(os.MkdirAll(filepath.Join(workingDir, ".dotnet_root", "shared", "dir1"), os.ModePerm)).To(Succeed())
 				})
+
 				it("errors", func() {
 					err := dotnetLinker.Link(workingDir, layerPath)
 					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError(ContainSubstring("permission denied")))
+					Expect(err).To(MatchError(ContainSubstring("file exists")))
 				})
 			})
 		})
