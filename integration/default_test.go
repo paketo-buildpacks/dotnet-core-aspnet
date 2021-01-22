@@ -57,6 +57,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			image, logs, err = pack.WithNoColor().Build.
 				WithPullPolicy("never").
 				WithBuildpacks(
+					dotnetCoreRuntimeBuildpack.Online,
 					buildpack,
 					buildPlanBuildpack,
 				).
@@ -67,9 +68,10 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
 				"  Resolving Dotnet Core ASPNet version",
 				"    Candidate version sources (in priority order):",
-				"      <unknown> -> \"*\"",
+				MatchRegexp(`      RUNTIME_VERSION -> "\d+\.\d+\.\d+"`),
+				"      <unknown>       -> \"*\"",
 				"",
-				MatchRegexp(`    Selected dotnet-aspnetcore version \(using <unknown>\): \d+\.\d+\.\d+`),
+				MatchRegexp(`    Selected dotnet-aspnetcore version \(using RUNTIME_VERSION\): \d+\.\d+\.\d+`),
 				"",
 				"  Executing build process",
 				MatchRegexp(`    Installing Dotnet Core ASPNet \d+\.\d+\.\d+`),

@@ -13,7 +13,14 @@ type VersionParser interface {
 
 func Detect(buildpackYMLParser VersionParser) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
-		var requirements []packit.BuildPlanRequirement
+		var requirements = []packit.BuildPlanRequirement{
+			{
+				Name: "dotnet-runtime",
+				Metadata: map[string]interface{}{
+					"build": true,
+				},
+			},
+		}
 		version, err := buildpackYMLParser.ParseVersion(filepath.Join(context.WorkingDir, "buildpack.yml"))
 		if err != nil {
 			return packit.DetectResult{}, err
