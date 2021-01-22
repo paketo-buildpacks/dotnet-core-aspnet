@@ -39,6 +39,14 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(result.Plan).To(Equal(packit.BuildPlan{
+				Requires: []packit.BuildPlanRequirement{
+					{
+						Name: "dotnet-runtime",
+						Metadata: map[string]interface{}{
+							"build": true,
+						},
+					},
+				},
 				Provides: []packit.BuildPlanProvision{
 					{Name: "dotnet-aspnetcore"},
 				},
@@ -63,6 +71,12 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					},
 				},
 				Requires: []packit.BuildPlanRequirement{
+					{
+						Name: "dotnet-runtime",
+						Metadata: map[string]interface{}{
+							"build": true,
+						},
+					},
 					{
 						Name: "dotnet-aspnetcore",
 						Metadata: map[string]interface{}{

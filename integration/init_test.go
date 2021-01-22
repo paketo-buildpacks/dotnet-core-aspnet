@@ -16,17 +16,22 @@ import (
 )
 
 var (
-	buildpack          string
-	buildPlanBuildpack string
-	offlineBuildpack   string
-	buildpackInfo      struct {
+	buildpack                  string
+	buildPlanBuildpack         string
+	dotnetCoreRuntimeBuildpack struct {
+		Online  string
+		Offline string
+	}
+	offlineBuildpack string
+	buildpackInfo    struct {
 		Buildpack struct {
 			ID   string
 			Name string
 		}
 	}
 	config struct {
-		BuildPlan string `json:"build-plan"`
+		BuildPlan         string `json:"build-plan"`
+		DotnetCoreRuntime string `json:"dotnet-core-runtime"`
 	}
 )
 
@@ -67,6 +72,15 @@ func TestIntegration(t *testing.T) {
 	Expect(err).NotTo(HaveOccurred())
 
 	SetDefaultEventuallyTimeout(5 * time.Second)
+
+	dotnetCoreRuntimeBuildpack.Online, err = buildpackStore.Get.
+		Execute(config.DotnetCoreRuntime)
+	Expect(err).NotTo(HaveOccurred())
+
+	dotnetCoreRuntimeBuildpack.Offline, err = buildpackStore.Get.
+		WithOfflineDependencies().
+		Execute(config.DotnetCoreRuntime)
+	Expect(err).NotTo(HaveOccurred())
 
 	suite := spec.New("Integration", spec.Report(report.Terminal{}), spec.Parallel())
 	suite("Default", testDefault)

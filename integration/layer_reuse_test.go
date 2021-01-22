@@ -67,6 +67,7 @@ func testLayerReuse(t *testing.T, context spec.G, it spec.S) {
 			build := pack.WithNoColor().Build.
 				WithPullPolicy("never").
 				WithBuildpacks(
+					dotnetCoreRuntimeBuildpack.Online,
 					buildpack,
 					buildPlanBuildpack,
 				)
@@ -76,10 +77,10 @@ func testLayerReuse(t *testing.T, context spec.G, it spec.S) {
 
 			imageIDs[firstImage.ID] = struct{}{}
 
-			Expect(firstImage.Buildpacks).To(HaveLen(2))
+			Expect(firstImage.Buildpacks).To(HaveLen(3))
 
-			Expect(firstImage.Buildpacks[0].Key).To(Equal(buildpackInfo.Buildpack.ID))
-			Expect(firstImage.Buildpacks[0].Layers).To(HaveKey("dotnet-core-aspnet"))
+			Expect(firstImage.Buildpacks[1].Key).To(Equal(buildpackInfo.Buildpack.ID))
+			Expect(firstImage.Buildpacks[1].Layers).To(HaveKey("dotnet-core-aspnet"))
 
 			Expect(logs.String()).To(ContainSubstring("  Executing build process"))
 
@@ -89,15 +90,15 @@ func testLayerReuse(t *testing.T, context spec.G, it spec.S) {
 
 			imageIDs[secondImage.ID] = struct{}{}
 
-			Expect(secondImage.Buildpacks).To(HaveLen(2))
+			Expect(secondImage.Buildpacks).To(HaveLen(3))
 
-			Expect(secondImage.Buildpacks[0].Key).To(Equal(buildpackInfo.Buildpack.ID))
-			Expect(secondImage.Buildpacks[0].Layers).To(HaveKey("dotnet-core-aspnet"))
+			Expect(secondImage.Buildpacks[1].Key).To(Equal(buildpackInfo.Buildpack.ID))
+			Expect(secondImage.Buildpacks[1].Layers).To(HaveKey("dotnet-core-aspnet"))
 
 			Expect(logs.String()).NotTo(ContainSubstring("  Executing build process"))
 			Expect(logs.String()).To(ContainSubstring(fmt.Sprintf("  Reusing cached layer /layers/%s/dotnet-core-aspnet", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"))))
 
-			Expect(secondImage.Buildpacks[0].Layers["dotnet-core-aspnet"].Metadata["built_at"]).To(Equal(firstImage.Buildpacks[0].Layers["dotnet-core-aspnet"].Metadata["built_at"]))
+			Expect(secondImage.Buildpacks[1].Layers["dotnet-core-aspnet"].Metadata["built_at"]).To(Equal(firstImage.Buildpacks[1].Layers["dotnet-core-aspnet"].Metadata["built_at"]))
 		})
 	})
 
@@ -113,9 +114,16 @@ func testLayerReuse(t *testing.T, context spec.G, it spec.S) {
 			source, err = occam.Source(filepath.Join("testdata", "default_app"))
 			Expect(err).NotTo(HaveOccurred())
 
+			err = ioutil.WriteFile(filepath.Join(source, "buildpack.yml"), []byte(`---
+dotnet-framework:
+  version: "2.*"
+`), os.ModePerm)
+			Expect(err).NotTo(HaveOccurred())
+
 			build := pack.WithNoColor().Build.
 				WithPullPolicy("never").
 				WithBuildpacks(
+					dotnetCoreRuntimeBuildpack.Online,
 					buildpack,
 					buildPlanBuildpack,
 				)
@@ -125,21 +133,18 @@ func testLayerReuse(t *testing.T, context spec.G, it spec.S) {
 
 			imageIDs[firstImage.ID] = struct{}{}
 
-			Expect(firstImage.Buildpacks).To(HaveLen(2))
+			Expect(firstImage.Buildpacks).To(HaveLen(3))
 
-			Expect(firstImage.Buildpacks[0].Key).To(Equal(buildpackInfo.Buildpack.ID))
-			Expect(firstImage.Buildpacks[0].Layers).To(HaveKey("dotnet-core-aspnet"))
+			Expect(firstImage.Buildpacks[1].Key).To(Equal(buildpackInfo.Buildpack.ID))
+			Expect(firstImage.Buildpacks[1].Layers).To(HaveKey("dotnet-core-aspnet"))
 
 			Expect(logs.String()).To(ContainSubstring("  Executing build process"))
 
 			// Second pack build
-			err = ioutil.WriteFile(filepath.Join(source, "plan.toml"), []byte(`[[requires]]
-			name = "dotnet-aspnetcore"
-
-				[requires.metadata]
-					launch = true
-					version = "2.1.*"
-			`), os.ModePerm)
+			err = ioutil.WriteFile(filepath.Join(source, "buildpack.yml"), []byte(`---
+dotnet-framework:
+  version: "5.*"
+`), os.ModePerm)
 			Expect(err).NotTo(HaveOccurred())
 
 			secondImage, logs, err = build.Execute(name, source)
@@ -147,15 +152,15 @@ func testLayerReuse(t *testing.T, context spec.G, it spec.S) {
 
 			imageIDs[secondImage.ID] = struct{}{}
 
-			Expect(secondImage.Buildpacks).To(HaveLen(2))
+			Expect(secondImage.Buildpacks).To(HaveLen(3))
 
-			Expect(secondImage.Buildpacks[0].Key).To(Equal(buildpackInfo.Buildpack.ID))
-			Expect(secondImage.Buildpacks[0].Layers).To(HaveKey("dotnet-core-aspnet"))
+			Expect(secondImage.Buildpacks[1].Key).To(Equal(buildpackInfo.Buildpack.ID))
+			Expect(secondImage.Buildpacks[1].Layers).To(HaveKey("dotnet-core-aspnet"))
 
 			Expect(logs.String()).To(ContainSubstring("  Executing build process"))
 			Expect(logs.String()).NotTo(ContainSubstring("Reusing cached layer"))
 
-			Expect(secondImage.Buildpacks[0].Layers["dotnet-core-aspnet"].Metadata["built_at"]).NotTo(Equal(firstImage.Buildpacks[0].Layers["dotnet-core-aspnet"].Metadata["built_at"]))
+			Expect(secondImage.Buildpacks[1].Layers["dotnet-core-aspnet"].Metadata["built_at"]).NotTo(Equal(firstImage.Buildpacks[1].Layers["dotnet-core-aspnet"].Metadata["built_at"]))
 		})
 	})
 }
