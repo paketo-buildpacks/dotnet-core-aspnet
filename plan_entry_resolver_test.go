@@ -178,7 +178,8 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 				{
 					Name: "dotnet-aspnetcore",
 					Metadata: map[string]interface{}{
-						"version": "other-version",
+						"version":        "other-version",
+						"version-source": "unknown source",
 					},
 				},
 				{
@@ -198,8 +199,8 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 			}))
 
 			Expect(buffer.String()).To(ContainSubstring("    Candidate version sources (in priority order):"))
-			Expect(buffer.String()).To(ContainSubstring("      project file -> \"project-file-version\""))
-			Expect(buffer.String()).To(ContainSubstring("      <unknown>    -> \"other-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      project file   -> \"project-file-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      unknown source -> \"other-version\""))
 		})
 	})
 
