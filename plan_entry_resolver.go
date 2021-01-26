@@ -22,6 +22,7 @@ func (r PlanEntryResolver) Resolve(entries []packit.BuildpackPlanEntry) packit.B
 			"RUNTIME_VERSION": 4,
 			"buildpack.yml":   3,
 			"*sproj":          2,
+			"project file":    2,
 			"":                -1,
 		}
 	)

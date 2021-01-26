@@ -94,6 +94,45 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 		})
 	})
 
+	context("when buildpack.yml and project file entries are included", func() {
+		it("resolves the best plan entry", func() {
+			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version": "other-version",
+					},
+				},
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version-source": "project file",
+						"version":        "project-file-version",
+					},
+				},
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version-source": "buildpack.yml",
+						"version":        "buildpack-yml-version",
+					},
+				},
+			})
+			Expect(entry).To(Equal(packit.BuildpackPlanEntry{
+				Name: "dotnet-aspnetcore",
+				Metadata: map[string]interface{}{
+					"version-source": "buildpack.yml",
+					"version":        "buildpack-yml-version",
+				},
+			}))
+
+			Expect(buffer.String()).To(ContainSubstring("    Candidate version sources (in priority order):"))
+			Expect(buffer.String()).To(ContainSubstring("      buildpack.yml -> \"buildpack-yml-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      project file  -> \"project-file-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      <unknown>     -> \"other-version\""))
+		})
+	})
+
 	context("when buildpack.yml and RUNTIME_VERSION entries are included", func() {
 		it("resolves the best plan entry", func() {
 			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
@@ -130,6 +169,37 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 			Expect(buffer.String()).To(ContainSubstring("      RUNTIME_VERSION -> \"runtime-version\""))
 			Expect(buffer.String()).To(ContainSubstring("      buildpack.yml   -> \"buildpack-yml-version\""))
 			Expect(buffer.String()).To(ContainSubstring("      <unknown>       -> \"other-version\""))
+		})
+	})
+
+	context("when project file and unknown entries are included", func() {
+		it("resolves the best plan entry", func() {
+			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version": "other-version",
+					},
+				},
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version-source": "project file",
+						"version":        "project-file-version",
+					},
+				},
+			})
+			Expect(entry).To(Equal(packit.BuildpackPlanEntry{
+				Name: "dotnet-aspnetcore",
+				Metadata: map[string]interface{}{
+					"version-source": "project file",
+					"version":        "project-file-version",
+				},
+			}))
+
+			Expect(buffer.String()).To(ContainSubstring("    Candidate version sources (in priority order):"))
+			Expect(buffer.String()).To(ContainSubstring("      project file -> \"project-file-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      <unknown>    -> \"other-version\""))
 		})
 	})
 
