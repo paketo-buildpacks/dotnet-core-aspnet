@@ -24,6 +24,45 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 		resolver = dotnetcoreaspnet.NewPlanEntryResolver(dotnetcoreaspnet.NewLogEmitter(buffer))
 	})
 
+	context("when buildpack.yml and RUNTIME_VERSION entries are included", func() {
+		it("resolves the best plan entry", func() {
+			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version": "other-version",
+					},
+				},
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version-source": "RUNTIME_VERSION",
+						"version":        "runtime-version",
+					},
+				},
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version-source": "buildpack.yml",
+						"version":        "buildpack-yml-version",
+					},
+				},
+			})
+			Expect(entry).To(Equal(packit.BuildpackPlanEntry{
+				Name: "dotnet-aspnetcore",
+				Metadata: map[string]interface{}{
+					"version-source": "RUNTIME_VERSION",
+					"version":        "runtime-version",
+				},
+			}))
+
+			Expect(buffer.String()).To(ContainSubstring("    Candidate version sources (in priority order):"))
+			Expect(buffer.String()).To(ContainSubstring("      RUNTIME_VERSION -> \"runtime-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      buildpack.yml   -> \"buildpack-yml-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      <unknown>       -> \"other-version\""))
+		})
+	})
+
 	context("when a buildpack.yml entry is included", func() {
 		it("resolves the best plan entry", func() {
 			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
@@ -52,6 +91,45 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 			Expect(buffer.String()).To(ContainSubstring("    Candidate version sources (in priority order):"))
 			Expect(buffer.String()).To(ContainSubstring("      buildpack.yml -> \"buildpack-yml-version\""))
 			Expect(buffer.String()).To(ContainSubstring("      <unknown>     -> \"other-version\""))
+		})
+	})
+
+	context("when a buildpack.yml and runtimeconfig.json are both included", func() {
+		it("resolves the best plan entry", func() {
+			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
+				{
+					Name: "dotnet-core-runtime",
+					Metadata: map[string]interface{}{
+						"version": "other-version",
+					},
+				},
+				{
+					Name: "dotnet-core-runtime",
+					Metadata: map[string]interface{}{
+						"version-source": "buildpack.yml",
+						"version":        "buildpack-yml-version",
+					},
+				},
+				{
+					Name: "dotnet-core-runtime",
+					Metadata: map[string]interface{}{
+						"version-source": "runtimeconfig.json",
+						"version":        "runtimeconfig-version",
+					},
+				},
+			})
+			Expect(entry).To(Equal(packit.BuildpackPlanEntry{
+				Name: "dotnet-core-runtime",
+				Metadata: map[string]interface{}{
+					"version-source": "buildpack.yml",
+					"version":        "buildpack-yml-version",
+				},
+			}))
+
+			Expect(buffer.String()).To(ContainSubstring("    Candidate version sources (in priority order):"))
+			Expect(buffer.String()).To(ContainSubstring("      buildpack.yml      -> \"buildpack-yml-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      runtimeconfig.json -> \"runtimeconfig-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      <unknown>          -> \"other-version\""))
 		})
 	})
 
@@ -94,45 +172,6 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 		})
 	})
 
-	context("when buildpack.yml and RUNTIME_VERSION entries are included", func() {
-		it("resolves the best plan entry", func() {
-			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
-				{
-					Name: "dotnet-aspnetcore",
-					Metadata: map[string]interface{}{
-						"version": "other-version",
-					},
-				},
-				{
-					Name: "dotnet-aspnetcore",
-					Metadata: map[string]interface{}{
-						"version-source": "RUNTIME_VERSION",
-						"version":        "runtime-version",
-					},
-				},
-				{
-					Name: "dotnet-aspnetcore",
-					Metadata: map[string]interface{}{
-						"version-source": "buildpack.yml",
-						"version":        "buildpack-yml-version",
-					},
-				},
-			})
-			Expect(entry).To(Equal(packit.BuildpackPlanEntry{
-				Name: "dotnet-aspnetcore",
-				Metadata: map[string]interface{}{
-					"version-source": "RUNTIME_VERSION",
-					"version":        "runtime-version",
-				},
-			}))
-
-			Expect(buffer.String()).To(ContainSubstring("    Candidate version sources (in priority order):"))
-			Expect(buffer.String()).To(ContainSubstring("      RUNTIME_VERSION -> \"runtime-version\""))
-			Expect(buffer.String()).To(ContainSubstring("      buildpack.yml   -> \"buildpack-yml-version\""))
-			Expect(buffer.String()).To(ContainSubstring("      <unknown>       -> \"other-version\""))
-		})
-	})
-
 	context("when project file and unknown entries are included", func() {
 		it("resolves the best plan entry", func() {
 			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
@@ -162,6 +201,38 @@ func testPlanEntryResolver(t *testing.T, context spec.G, it spec.S) {
 			Expect(buffer.String()).To(ContainSubstring("    Candidate version sources (in priority order):"))
 			Expect(buffer.String()).To(ContainSubstring("      my-app.csproj  -> \"project-file-version\""))
 			Expect(buffer.String()).To(ContainSubstring("      unknown source -> \"other-version\""))
+		})
+	})
+
+	context("when runtimeconfig.json and unknown entries are included", func() {
+		it("resolves the best plan entry", func() {
+			entry := resolver.Resolve([]packit.BuildpackPlanEntry{
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version":        "other-version",
+						"version-source": "unknown source",
+					},
+				},
+				{
+					Name: "dotnet-aspnetcore",
+					Metadata: map[string]interface{}{
+						"version-source": "runtimeconfig.json",
+						"version":        "runtimeconfig-version",
+					},
+				},
+			})
+			Expect(entry).To(Equal(packit.BuildpackPlanEntry{
+				Name: "dotnet-aspnetcore",
+				Metadata: map[string]interface{}{
+					"version-source": "runtimeconfig.json",
+					"version":        "runtimeconfig-version",
+				},
+			}))
+
+			Expect(buffer.String()).To(ContainSubstring("    Candidate version sources (in priority order):"))
+			Expect(buffer.String()).To(ContainSubstring("      runtimeconfig.json -> \"runtimeconfig-version\""))
+			Expect(buffer.String()).To(ContainSubstring("      unknown source     -> \"other-version\""))
 		})
 	})
 

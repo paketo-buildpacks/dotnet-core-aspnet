@@ -53,6 +53,7 @@ func getPriority(source string) int {
 		priorities = map[string]int{
 			"RUNTIME_VERSION":        4,
 			"buildpack.yml":          3,
+			"runtimeconfig.json":     2,
 			`.*\.(cs)|(fs)|(vb)proj`: 2, // matches filename.(cs/fs/vb)proj
 			"":                       -1,
 		}
