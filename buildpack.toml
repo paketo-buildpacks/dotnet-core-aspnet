@@ -2,7 +2,7 @@ api = "0.2"
 
 [buildpack]
   id = "paketo-buildpacks/dotnet-core-aspnet"
-  name = "Paketo ASP.Net Core Buildpack"
+  name = "Paketo ASP.NET Core Buildpack"
   homepage = "https://github.com/paketo-buildpacks/dotnet-core-aspnet"
 
 [metadata]
