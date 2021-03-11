@@ -147,11 +147,12 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					SharedEnv: packit.Environment{
 						"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
 					},
-					LaunchEnv: packit.Environment{},
-					BuildEnv:  packit.Environment{},
-					Build:     false,
-					Launch:    false,
-					Cache:     false,
+					LaunchEnv:        packit.Environment{},
+					BuildEnv:         packit.Environment{},
+					ProcessLaunchEnv: map[string]packit.Environment{},
+					Build:            false,
+					Launch:           false,
+					Cache:            false,
 					Metadata: map[string]interface{}{
 						"dependency-sha": "",
 						"built_at":       timeStamp.Format(time.RFC3339Nano),
@@ -231,11 +232,12 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 						SharedEnv: packit.Environment{
 							"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
 						},
-						LaunchEnv: packit.Environment{},
-						BuildEnv:  packit.Environment{},
-						Build:     false,
-						Launch:    false,
-						Cache:     false,
+						LaunchEnv:        packit.Environment{},
+						BuildEnv:         packit.Environment{},
+						ProcessLaunchEnv: map[string]packit.Environment{},
+						Build:            false,
+						Launch:           false,
+						Cache:            false,
 						Metadata: map[string]interface{}{
 							"dependency-sha": "",
 							"built_at":       timeStamp.Format(time.RFC3339Nano),
@@ -316,11 +318,12 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 						SharedEnv: packit.Environment{
 							"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
 						},
-						LaunchEnv: packit.Environment{},
-						BuildEnv:  packit.Environment{},
-						Build:     true,
-						Launch:    true,
-						Cache:     true,
+						LaunchEnv:        packit.Environment{},
+						BuildEnv:         packit.Environment{},
+						ProcessLaunchEnv: map[string]packit.Environment{},
+						Build:            true,
+						Launch:           true,
+						Cache:            true,
 						Metadata: map[string]interface{}{
 							"dependency-sha": "",
 							"built_at":       timeStamp.Format(time.RFC3339Nano),
@@ -386,11 +389,12 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 						SharedEnv: packit.Environment{
 							"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
 						},
-						LaunchEnv: packit.Environment{},
-						BuildEnv:  packit.Environment{},
-						Build:     false,
-						Launch:    false,
-						Cache:     false,
+						LaunchEnv:        packit.Environment{},
+						BuildEnv:         packit.Environment{},
+						ProcessLaunchEnv: map[string]packit.Environment{},
+						Build:            false,
+						Launch:           false,
+						Cache:            false,
 						Metadata: map[string]interface{}{
 							"dependency-sha": "",
 							"built_at":       timeStamp.Format(time.RFC3339Nano),
@@ -496,7 +500,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		context("when the dotnet-core-aspnet layer cannot be reset", func() {
 			it.Before(func() {
 				Expect(os.MkdirAll(filepath.Join(layersDir, "dotnet-core-aspnet", "something"), os.ModePerm)).To(Succeed())
-				Expect(os.Chmod(filepath.Join(layersDir, "dotnet-core-aspnet"), 0000)).To(Succeed())
+				Expect(os.Chmod(filepath.Join(layersDir, "dotnet-core-aspnet"), 0500)).To(Succeed())
 			})
 
 			it.After(func() {
