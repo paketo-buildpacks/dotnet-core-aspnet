@@ -75,6 +75,11 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 			logger.Process("Reusing cached layer %s", aspNetLayer.Path)
 			logger.Break()
 
+			err = symlinker.Link(context.WorkingDir, aspNetLayer.Path)
+			if err != nil {
+				return packit.BuildResult{}, err
+			}
+
 			return packit.BuildResult{
 				Plan:   bom,
 				Layers: []packit.Layer{aspNetLayer},
@@ -89,7 +94,7 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 
 		aspNetLayer.Launch = entry.Metadata["launch"] == true
 		aspNetLayer.Build = entry.Metadata["build"] == true
-		aspNetLayer.Cache = entry.Metadata["build"] == true
+		aspNetLayer.Cache = entry.Metadata["build"] == true || entry.Metadata["launch"] == true
 
 		logger.Subprocess("Installing Dotnet Core ASPNet %s", dependency.Version)
 		duration, err := clock.Measure(func() error {
