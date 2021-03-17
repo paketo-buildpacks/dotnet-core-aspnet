@@ -78,11 +78,7 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 				cLogs, err := docker.Container.Logs.Execute(container.ID)
 				Expect(err).NotTo(HaveOccurred())
 				return cLogs.String()
-			}).Should(
-				And(
-					ContainSubstring("AspNetCore.dll exists"),
-				),
-			)
+			}).Should(ContainSubstring("AspNetCore.dll exists"))
 		})
 	})
 }

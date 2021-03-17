@@ -418,8 +418,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		it("exits build process early", func() {
 			_, err := build(packit.BuildContext{
-				CNBPath: cnbDir,
-				Stack:   "some-stack",
+				WorkingDir: workingDir,
+				CNBPath:    cnbDir,
+				Stack:      "some-stack",
 				BuildpackInfo: packit.BuildpackInfo{
 					Name:    "Some Buildpack",
 					Version: "some-version",
@@ -444,6 +445,10 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				ID:     "dotnet-aspnetcore",
 				SHA256: "some-sha",
 			}))
+
+			Expect(symlinker.LinkCall.CallCount).To(Equal(1))
+			Expect(symlinker.LinkCall.Receives.WorkingDir).To(Equal(workingDir))
+			Expect(symlinker.LinkCall.Receives.LayerPath).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
 
 			Expect(dependencyManager.InstallCall.CallCount).To(Equal(0))
 
@@ -473,6 +478,40 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					Stack:  "some-stack",
 				})
 				Expect(err).To(MatchError("failed to resolve dependency"))
+			})
+		})
+
+		context("when the dotnet symlinker fails on a rebuild", func() {
+			it.Before(func() {
+				err := ioutil.WriteFile(filepath.Join(layersDir, "dotnet-core-aspnet.toml"), []byte("[metadata]\ndependency-sha = \"some-sha\"\n"), 0644)
+				Expect(err).NotTo(HaveOccurred())
+
+				dependencyManager.ResolveCall.Returns.Dependency = postal.Dependency{
+					ID:     "dotnet-aspnetcore",
+					SHA256: "some-sha",
+				}
+
+				symlinker.LinkCall.Returns.Err = errors.New("symlinker error")
+			})
+
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					CNBPath: cnbDir,
+					Plan: packit.BuildpackPlan{
+						Entries: []packit.BuildpackPlanEntry{
+							{
+								Name: "dotnet-aspnetcore",
+								Metadata: map[string]interface{}{
+									"version":        "2.5.x",
+									"version-source": "buildpack.yml",
+								},
+							},
+						},
+					},
+					Layers: packit.Layers{Path: layersDir},
+					Stack:  "some-stack",
+				})
+				Expect(err).To(MatchError("symlinker error"))
 			})
 		})
 
