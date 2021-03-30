@@ -54,5 +54,28 @@ file that looks like the following:
 
 To package this buildpack for consumption:
 ```
-$ ./scripts/package.sh
+$ ./scripts/package.sh -v <version>
+```
+
+## Configuration
+
+Specifying the .NET Framework Version through `buildpack.yml` configuration
+will be deprecated in .NET Core ASPNet Buildpack v1.0.0.
+
+To migrate from using `buildpack.yml` please set the following environment
+variables at build time either directly (ex. `pack build my-app --env
+BP_ENVIRONMENT_VARIABLE=some-value`) or through a [`project.toml`
+file](https://github.com/buildpacks/spec/blob/main/extensions/project-descriptor.md)
+
+### `BP_DOTNET_FRAMEWORK_VERSION`
+The `BP_DOTNET_FRAMEWORK_VERSION` variable allows you to specify the version of .NET Core ASPNet that is installed.
+
+```shell
+BP_DOTNET_FRAMEWORK_VERSION=5.0.4
+```
+
+This will replace the following structure in `buildpack.yml`:
+```yaml
+dotnet-framework:
+  version: "5.0.4"
 ```

@@ -52,7 +52,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		entryResolver.ResolveCall.Returns.BuildpackPlanEntry = packit.BuildpackPlanEntry{
 			Name: "dotnet-aspnetcore",
 			Metadata: map[string]interface{}{
-				"version-source": "buildpack.yml",
+				"version-source": "BP_DOTNET_FRAMEWORK_VERSION",
 				"version":        "2.5.x",
 			},
 		}
@@ -114,7 +114,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					{
 						Name: "dotnet-aspnetcore",
 						Metadata: map[string]interface{}{
-							"version-source": "buildpack.yml",
+							"version-source": "BP_DOTNET_FRAMEWORK_VERSION",
 							"version":        "2.5.x",
 						},
 					},
@@ -199,7 +199,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 						{
 							Name: "dotnet-aspnetcore",
 							Metadata: map[string]interface{}{
-								"version-source": "buildpack.yml",
+								"version-source": "BP_DOTNET_FRAMEWORK_VERSION",
 								"version":        "2.5.x",
 							},
 						},
@@ -261,7 +261,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			entryResolver.ResolveCall.Returns.BuildpackPlanEntry = packit.BuildpackPlanEntry{
 				Name: "dotnet-aspnetcore",
 				Metadata: map[string]interface{}{
-					"version-source": "buildpack.yml",
+					"version-source": "BP_DOTNET_FRAMEWORK_VERSION",
 					"version":        "2.5.x",
 					"build":          true,
 					"launch":         true,
@@ -283,7 +283,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 						{
 							Name: "dotnet-aspnetcore",
 							Metadata: map[string]interface{}{
-								"version-source": "buildpack.yml",
+								"version-source": "BP_DOTNET_FRAMEWORK_VERSION",
 								"version":        "2.5.x",
 								"build":          true,
 								"launch":         true,
@@ -361,7 +361,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 						{
 							Name: "dotnet-aspnetcore",
 							Metadata: map[string]interface{}{
-								"version-source": "buildpack.yml",
+								"version-source": "BP_DOTNET_FRAMEWORK_VERSION",
 								"version":        "2.5.x",
 							},
 						},
@@ -431,7 +431,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 							Name: "dotnet-aspnetcore",
 							Metadata: map[string]interface{}{
 								"version":        "2.5.x",
-								"version-source": "buildpack.yml",
+								"version-source": "BP_DOTNET_FRAMEWORK_VERSION",
 							},
 						},
 					},
@@ -454,9 +454,90 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(buffer.String()).To(ContainSubstring("Some Buildpack some-version"))
 			Expect(buffer.String()).To(ContainSubstring("Resolving Dotnet Core ASPNet version"))
-			Expect(buffer.String()).To(ContainSubstring("Selected dotnet-aspnetcore version (using buildpack.yml): "))
+			Expect(buffer.String()).To(ContainSubstring("Selected dotnet-aspnetcore version (using BP_DOTNET_FRAMEWORK_VERSION): "))
 			Expect(buffer.String()).To(ContainSubstring("Reusing cached layer"))
 			Expect(buffer.String()).ToNot(ContainSubstring("Executing build process"))
+		})
+	})
+
+	context("when version-source of the selected entry is buildpack.yml", func() {
+		it.Before(func() {
+			entryResolver.ResolveCall.Returns.BuildpackPlanEntry = packit.BuildpackPlanEntry{
+				Name: "dotnet-aspnetcore",
+				Metadata: map[string]interface{}{
+					"version-source": "buildpack.yml",
+					"version":        "2.5.x",
+				},
+			}
+		})
+		it("returns a result that builds correctly", func() {
+			result, err := build(packit.BuildContext{
+				WorkingDir: workingDir,
+				CNBPath:    cnbDir,
+				Stack:      "some-stack",
+				BuildpackInfo: packit.BuildpackInfo{
+					Name:    "Some Buildpack",
+					Version: "0.1.2",
+				},
+				Plan: packit.BuildpackPlan{
+					Entries: []packit.BuildpackPlanEntry{
+						{
+							Name: "dotnet-aspnetcore",
+							Metadata: map[string]interface{}{
+								"version-source": "buildpack.yml",
+								"version":        "2.5.x",
+							},
+						},
+					},
+				},
+				Layers: packit.Layers{Path: layersDir},
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(result).To(Equal(packit.BuildResult{
+				Plan: packit.BuildpackPlan{
+					Entries: []packit.BuildpackPlanEntry{
+						{
+							Name: "dotnet-aspnetcore",
+							Metadata: map[string]interface{}{
+								"licenses": []string{},
+								"name":     "dotnet-aspnetcore-dep-name",
+								"sha256":   "dotnet-aspnetcore-dep-sha",
+								"stacks":   "dotnet-aspnetcore-dep-stacks",
+								"uri":      "dotnet-aspnetcore-dep-uri",
+								"version":  "2.5.x",
+							},
+						},
+					},
+				},
+				Layers: []packit.Layer{
+					{
+						Name: "dotnet-core-aspnet",
+						Path: filepath.Join(layersDir, "dotnet-core-aspnet"),
+						SharedEnv: packit.Environment{
+							"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
+						},
+						LaunchEnv:        packit.Environment{},
+						BuildEnv:         packit.Environment{},
+						ProcessLaunchEnv: map[string]packit.Environment{},
+						Build:            false,
+						Launch:           false,
+						Cache:            false,
+						Metadata: map[string]interface{}{
+							"dependency-sha": "",
+							"built_at":       timeStamp.Format(time.RFC3339Nano),
+						},
+					},
+				},
+			}))
+			Expect(buffer.String()).To(ContainSubstring("Some Buildpack 0.1.2"))
+			Expect(buffer.String()).To(ContainSubstring("Resolving Dotnet Core ASPNet version"))
+			Expect(buffer.String()).To(ContainSubstring("Selected dotnet-aspnetcore version (using buildpack.yml): "))
+			// v1.0.0 because that's the next major after input version v0.1.2
+			Expect(buffer.String()).To(ContainSubstring("WARNING: Setting the .NET Framework version through buildpack.yml will be deprecated soon in Dotnet Core ASPNet Buildpack v1.0.0."))
+			Expect(buffer.String()).To(ContainSubstring("Please specify the version through the $BP_DOTNET_FRAMEWORK_VERSION environment variable instead. See docs for more information."))
+			Expect(buffer.String()).To(ContainSubstring("Executing build process"))
+			Expect(buffer.String()).To(ContainSubstring("Configuring environment"))
 		})
 	})
 
@@ -503,7 +584,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 								Name: "dotnet-aspnetcore",
 								Metadata: map[string]interface{}{
 									"version":        "2.5.x",
-									"version-source": "buildpack.yml",
+									"version-source": "BP_DOTNET_FRAMEWORK_VERSION",
 								},
 							},
 						},
