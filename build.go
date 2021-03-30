@@ -3,6 +3,7 @@ package dotnetcoreaspnet
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/Masterminds/semver"
@@ -13,7 +14,8 @@ import (
 
 //go:generate faux --interface EntryResolver --output fakes/entry_resolver.go
 type EntryResolver interface {
-	Resolve([]packit.BuildpackPlanEntry) packit.BuildpackPlanEntry
+	Resolve(string, []packit.BuildpackPlanEntry, []interface{}) (packit.BuildpackPlanEntry, []packit.BuildpackPlanEntry)
+	MergeLayerTypes(string, []packit.BuildpackPlanEntry) (launch, build bool)
 }
 
 //go:generate faux --interface DependencyManager --output fakes/dependency_manager.go
@@ -47,7 +49,17 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 			})
 		}
 
-		entry := entries.Resolve(context.Plan.Entries)
+		priorities := []interface{}{
+			"RUNTIME_VERSION",
+			"BP_DOTNET_FRAMEWORK_VERSION",
+			"buildpack.yml",
+			regexp.MustCompile(`.*\.(cs)|(fs)|(vb)proj`),
+			"runtimeconfig.json",
+		}
+
+		entry, sortedEntries := entries.Resolve("dotnet-aspnetcore", context.Plan.Entries, priorities)
+		logger.Candidates(sortedEntries)
+
 		version, _ := entry.Metadata["version"].(string)
 
 		source, _ := entry.Metadata["version-source"].(string)
@@ -101,9 +113,8 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 			return packit.BuildResult{}, err
 		}
 
-		aspNetLayer.Launch = entry.Metadata["launch"] == true
-		aspNetLayer.Build = entry.Metadata["build"] == true
-		aspNetLayer.Cache = entry.Metadata["build"] == true || entry.Metadata["launch"] == true
+		aspNetLayer.Launch, aspNetLayer.Build = entries.MergeLayerTypes("dotnet-aspnetcore", context.Plan.Entries)
+		aspNetLayer.Cache = aspNetLayer.Launch || aspNetLayer.Build
 
 		logger.Subprocess("Installing Dotnet Core ASPNet %s", dependency.Version)
 		duration, err := clock.Measure(func() error {

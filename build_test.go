@@ -267,6 +267,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					"launch":         true,
 				},
 			}
+
+			entryResolver.MergeLayerTypesCall.Returns.Launch = true
+			entryResolver.MergeLayerTypesCall.Returns.Build = true
 		})
 
 		it("marks the layer as build, cache and launch", func() {
