@@ -152,5 +152,5 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 				`    DOTNET_ROOT -> "/workspace/.dotnet_root"`,
 			))
 		})
-	})
+	}, spec.Sequential())
 }

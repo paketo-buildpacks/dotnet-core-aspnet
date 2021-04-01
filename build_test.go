@@ -254,7 +254,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				},
 			}))
 		})
-	}, spec.Sequential())
+	})
 
 	context("when the build plan entry include build, launch flags", func() {
 		it.Before(func() {
@@ -473,8 +473,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				},
 			}
 		})
-		it("returns a result that builds correctly", func() {
-			result, err := build(packit.BuildContext{
+		it("chooses the specified version and emits a warning", func() {
+			_, err := build(packit.BuildContext{
 				WorkingDir: workingDir,
 				CNBPath:    cnbDir,
 				Stack:      "some-stack",
@@ -497,42 +497,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(result).To(Equal(packit.BuildResult{
-				Plan: packit.BuildpackPlan{
-					Entries: []packit.BuildpackPlanEntry{
-						{
-							Name: "dotnet-aspnetcore",
-							Metadata: map[string]interface{}{
-								"licenses": []string{},
-								"name":     "dotnet-aspnetcore-dep-name",
-								"sha256":   "dotnet-aspnetcore-dep-sha",
-								"stacks":   "dotnet-aspnetcore-dep-stacks",
-								"uri":      "dotnet-aspnetcore-dep-uri",
-								"version":  "2.5.x",
-							},
-						},
-					},
-				},
-				Layers: []packit.Layer{
-					{
-						Name: "dotnet-core-aspnet",
-						Path: filepath.Join(layersDir, "dotnet-core-aspnet"),
-						SharedEnv: packit.Environment{
-							"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
-						},
-						LaunchEnv:        packit.Environment{},
-						BuildEnv:         packit.Environment{},
-						ProcessLaunchEnv: map[string]packit.Environment{},
-						Build:            false,
-						Launch:           false,
-						Cache:            false,
-						Metadata: map[string]interface{}{
-							"dependency-sha": "",
-							"built_at":       timeStamp.Format(time.RFC3339Nano),
-						},
-					},
-				},
-			}))
 			Expect(buffer.String()).To(ContainSubstring("Some Buildpack 0.1.2"))
 			Expect(buffer.String()).To(ContainSubstring("Resolving Dotnet Core ASPNet version"))
 			Expect(buffer.String()).To(ContainSubstring("Selected dotnet-aspnetcore version (using buildpack.yml): "))
