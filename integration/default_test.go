@@ -117,7 +117,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.RemoveAll(source)).To(Succeed())
 		})
 
-		it("installs the version from $BP_DOTNET_FRAMEWORK_VERSION", func() {
+		it("considers BP_DOTNET_FRAMEWORK_VERSION as a version source", func() {
 			var err error
 			source, err = occam.Source(filepath.Join("testdata", "default_app"))
 			Expect(err).NotTo(HaveOccurred())
