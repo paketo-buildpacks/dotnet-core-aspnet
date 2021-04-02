@@ -69,7 +69,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 				"  Resolving Dotnet Core ASPNet version",
 				"    Candidate version sources (in priority order):",
 				MatchRegexp(`      RUNTIME_VERSION -> "\d+\.\d+\.\d+"`),
-				"      <unknown>       -> \"*\"",
+				"      <unknown>       -> \"\"",
 				"",
 				MatchRegexp(`    Selected dotnet-aspnetcore version \(using RUNTIME_VERSION\): \d+\.\d+\.\d+`),
 				"",
@@ -98,4 +98,59 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			}).Should(ContainSubstring("AspNetCore.dll exists"))
 		})
 	})
+
+	context("image is built with BP_DOTNET_FRAMEWORK_VERSION set", func() {
+		var (
+			image  occam.Image
+			name   string
+			source string
+		)
+
+		it.Before(func() {
+			var err error
+			name, err = occam.RandomName()
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		it.After(func() {
+			Expect(docker.Image.Remove.Execute(image.ID)).To(Succeed())
+			Expect(os.RemoveAll(source)).To(Succeed())
+		})
+
+		it("considers BP_DOTNET_FRAMEWORK_VERSION as a version source", func() {
+			var err error
+			source, err = occam.Source(filepath.Join("testdata", "default_app"))
+			Expect(err).NotTo(HaveOccurred())
+
+			var logs fmt.Stringer
+			image, logs, err = pack.WithNoColor().Build.
+				WithPullPolicy("never").
+				WithBuildpacks(
+					dotnetCoreRuntimeBuildpack.Online,
+					buildpack,
+					buildPlanBuildpack,
+				).
+				WithEnv(map[string]string{"BP_DOTNET_FRAMEWORK_VERSION": "3.1.*"}).
+				Execute(name, source)
+			Expect(err).NotTo(HaveOccurred(), logs.String())
+
+			Expect(logs).To(ContainLines(
+				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
+				"  Resolving Dotnet Core ASPNet version",
+				"    Candidate version sources (in priority order):",
+				MatchRegexp(`      RUNTIME_VERSION             -> "3\.1\.\d+"`),
+				"      BP_DOTNET_FRAMEWORK_VERSION -> \"3.1.*\"",
+				"      <unknown>                   -> \"\"",
+				"",
+				MatchRegexp(`    Selected dotnet-aspnetcore version \(using RUNTIME_VERSION\): \d+\.\d+\.\d+`),
+				"",
+				"  Executing build process",
+				MatchRegexp(`    Installing Dotnet Core ASPNet 3\.1\.\d+`),
+				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
+				"",
+				"  Configuring environment",
+				`    DOTNET_ROOT -> "/workspace/.dotnet_root"`,
+			))
+		})
+	}, spec.Sequential())
 }

@@ -3,8 +3,10 @@ package dotnetcoreaspnet
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 
+	"github.com/Masterminds/semver"
 	"github.com/paketo-buildpacks/packit"
 	"github.com/paketo-buildpacks/packit/chronos"
 	"github.com/paketo-buildpacks/packit/postal"
@@ -12,7 +14,8 @@ import (
 
 //go:generate faux --interface EntryResolver --output fakes/entry_resolver.go
 type EntryResolver interface {
-	Resolve([]packit.BuildpackPlanEntry) packit.BuildpackPlanEntry
+	Resolve(string, []packit.BuildpackPlanEntry, []interface{}) (packit.BuildpackPlanEntry, []packit.BuildpackPlanEntry)
+	MergeLayerTypes(string, []packit.BuildpackPlanEntry) (launch, build bool)
 }
 
 //go:generate faux --interface DependencyManager --output fakes/dependency_manager.go
@@ -46,8 +49,26 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 			})
 		}
 
-		entry := entries.Resolve(context.Plan.Entries)
+		priorities := []interface{}{
+			"RUNTIME_VERSION",
+			"BP_DOTNET_FRAMEWORK_VERSION",
+			"buildpack.yml",
+			regexp.MustCompile(`.*\.(cs)|(fs)|(vb)proj`),
+			"runtimeconfig.json",
+		}
+
+		entry, sortedEntries := entries.Resolve("dotnet-aspnetcore", context.Plan.Entries, priorities)
+		logger.Candidates(sortedEntries)
+
 		version, _ := entry.Metadata["version"].(string)
+
+		source, _ := entry.Metadata["version-source"].(string)
+		if source == "buildpack.yml" {
+			nextMajorVersion := semver.MustParse(context.BuildpackInfo.Version).IncMajor()
+			logger.Subprocess("WARNING: Setting the .NET Framework version through buildpack.yml will be deprecated soon in Dotnet Core ASPNet Buildpack v%s.", nextMajorVersion.String())
+			logger.Subprocess("Please specify the version through the $BP_DOTNET_FRAMEWORK_VERSION environment variable instead. See docs for more information.")
+			logger.Break()
+		}
 
 		dependency, err := dependencies.Resolve(filepath.Join(context.CNBPath, "buildpack.toml"), entry.Name, version, context.Stack)
 		if err != nil {
@@ -92,9 +113,8 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 			return packit.BuildResult{}, err
 		}
 
-		aspNetLayer.Launch = entry.Metadata["launch"] == true
-		aspNetLayer.Build = entry.Metadata["build"] == true
-		aspNetLayer.Cache = entry.Metadata["build"] == true || entry.Metadata["launch"] == true
+		aspNetLayer.Launch, aspNetLayer.Build = entries.MergeLayerTypes("dotnet-aspnetcore", context.Plan.Entries)
+		aspNetLayer.Cache = aspNetLayer.Launch || aspNetLayer.Build
 
 		logger.Subprocess("Installing Dotnet Core ASPNet %s", dependency.Version)
 		duration, err := clock.Measure(func() error {
