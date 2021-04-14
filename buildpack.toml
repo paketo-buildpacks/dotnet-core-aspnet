@@ -29,21 +29,21 @@ api = "0.2"
 
   [[metadata.dependencies]]
     id = "dotnet-aspnetcore"
-    sha256 = "90d8e6ebfccc089670a58d53399740c4d409cb31ef187b53884a376a98f215c5"
-    source = "https://download.visualstudio.microsoft.com/download/pr/c5d69db1-7735-4473-973c-220b56c32e3d/8b907777706429063b0ed646a5445cdf/aspnetcore-runtime-3.1.12-linux-x64.tar.gz"
-    source_sha256 = "a081997862e3dcac9769d0660ba6e86cb23bf6e36e80fc70050854570ed48d00"
-    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_3.1.12_linux_x64_any-stack_90d8e6eb.tar.xz"
-    version = "3.1.12"
-
-  [[metadata.dependencies]]
-    id = "dotnet-aspnetcore"
     sha256 = "2c87b3228b7cce88a6ceefd5a2a98ace1243eeddc5efd41d58846ec6326bacee"
     source = "https://download.visualstudio.microsoft.com/download/pr/a11a4be1-2a51-4ddc-a23a-56348ea45101/20085ae5fbefd18642babcee279a74e4/aspnetcore-runtime-3.1.13-linux-x64.tar.gz"
     source_sha256 = "0d6f25f0d05972265e05b483284f968c339c1bd03500028209d32c3f618618b4"
     stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
     uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_3.1.13_linux_x64_any-stack_2c87b322.tar.xz"
     version = "3.1.13"
+
+  [[metadata.dependencies]]
+    id = "dotnet-aspnetcore"
+    sha256 = "b632c78673f2a408381741dfe660aed75535e2c3c473e209b3cc33f9e5e99948"
+    source = "https://download.visualstudio.microsoft.com/download/pr/516b337a-83f9-4946-b2a6-b2f686e09a76/d0e82549e890c5d852c461319ffd5b31/aspnetcore-runtime-3.1.14-linux-x64.tar.gz"
+    source_sha256 = "96a66d44b6aaf71da50a6709912aab36f007cd974dd3766b55c67a8aab5748a8"
+    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
+    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_3.1.14_linux_x64_any-stack_b632c786.tar.xz"
+    version = "3.1.14"
 
   [[metadata.dependencies]]
     id = "dotnet-aspnetcore"
