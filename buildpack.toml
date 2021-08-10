@@ -1,22 +1,13 @@
 api = "0.2"
 
 [buildpack]
-  homepage = "https://github.com/paketo-buildpacks/dotnet-core-aspnet"
   id = "paketo-buildpacks/dotnet-core-aspnet"
   name = "Paketo ASP.NET Core Buildpack"
+  homepage = "https://github.com/paketo-buildpacks/dotnet-core-aspnet"
 
 [metadata]
   include-files = ["bin/build", "bin/detect", "bin/run", "buildpack.toml"]
   pre-package = "./scripts/build.sh"
-
-  [[metadata.dependencies]]
-    id = "dotnet-aspnetcore"
-    sha256 = "c3650d3646c13e79c2102b2a9487f02cbca61318c0fc03122676a8d322e2f016"
-    source = "https://download.visualstudio.microsoft.com/download/pr/c66dd1cb-a5fc-4427-bef4-d55a1da5a5c7/17f733c7b6afe91ef9c91e9f6e170cad/aspnetcore-runtime-2.1.27-linux-x64.tar.gz"
-    source_sha256 = "1863027b81a24de56ca2c2a77b96e337606b5fe0d78021e69e19bfde96e2da0a"
-    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_2.1.27_linux_x64_any-stack_c3650d36.tar.xz"
-    version = "2.1.27"
 
   [[metadata.dependencies]]
     id = "dotnet-aspnetcore"
@@ -26,6 +17,15 @@ api = "0.2"
     stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
     uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_2.1.28_linux_x64_any-stack_128e76c1.tar.xz"
     version = "2.1.28"
+
+  [[metadata.dependencies]]
+    id = "dotnet-aspnetcore"
+    sha256 = "fdb3a0e310d754ed8a26d312d753c4524c3c8a03f2ed4e2c5c668780bfbe5957"
+    source = "https://download.visualstudio.microsoft.com/download/pr/5d7cfd65-4f71-46e8-b05b-d7ff8d0daa00/0f21d9c66047f10d385ce15935116506/aspnetcore-runtime-2.1.29-linux-x64.tar.gz"
+    source_sha256 = "80606998d3b6b11f12e0b39f8ccbd22599b7cc5684439958411c01f56b672c8b"
+    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
+    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_2.1.29_linux_x64_any-stack_fdb3a0e3.tar.xz"
+    version = "2.1.29"
 
   [[metadata.dependencies]]
     id = "dotnet-aspnetcore"
