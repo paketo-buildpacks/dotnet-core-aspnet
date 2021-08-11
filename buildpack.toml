@@ -1,9 +1,9 @@
 api = "0.2"
 
 [buildpack]
-  homepage = "https://github.com/paketo-buildpacks/dotnet-core-aspnet"
   id = "paketo-buildpacks/dotnet-core-aspnet"
   name = "Paketo ASP.NET Core Buildpack"
+  homepage = "https://github.com/paketo-buildpacks/dotnet-core-aspnet"
 
 [metadata]
   include-files = ["bin/build", "bin/detect", "bin/run", "buildpack.toml"]
@@ -29,15 +29,6 @@ api = "0.2"
 
   [[metadata.dependencies]]
     id = "dotnet-aspnetcore"
-    sha256 = "89db461915e2f49bab0b65bf184180221db6a5e6044a9a1ec9afe0152c1cbad9"
-    source = "https://download.visualstudio.microsoft.com/download/pr/c20a5ac5-5174-46b8-a875-b916a416050d/b2ddd212a183260569178d880899bd94/aspnetcore-runtime-3.1.16-linux-x64.tar.gz"
-    source_sha256 = "b1a2f61d8a49e2a3ca5eb9daa103b83eb49ea1bcf14914560e601222e94a3022"
-    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_3.1.16_linux_x64_any-stack_89db4619.tar.xz"
-    version = "3.1.16"
-
-  [[metadata.dependencies]]
-    id = "dotnet-aspnetcore"
     sha256 = "f6dedb579a283714187a2b3b9d38b583dab58bf6b28cdc39a9656deb94b1a8e2"
     source = "https://download.visualstudio.microsoft.com/download/pr/5f9e644f-4555-4a62-8f92-af1ee9634008/778036941916d560bef6da8899ac88f5/aspnetcore-runtime-3.1.17-linux-x64.tar.gz"
     source_sha256 = "fa4354230a6f905e06bf14d8de760b23f4daba27cd8d0364760fcbbe09f32232"
@@ -47,12 +38,12 @@ api = "0.2"
 
   [[metadata.dependencies]]
     id = "dotnet-aspnetcore"
-    sha256 = "3b214b55ff22deddc42672c3cd590472ba07d901ff594b95e232a7c16a49bd49"
-    source = "https://download.visualstudio.microsoft.com/download/pr/d6be94b3-458f-43c4-8bb5-9ba261de8c9c/bbe13b54208d088b5fdf428759b5bc0a/aspnetcore-runtime-5.0.7-linux-x64.tar.gz"
-    source_sha256 = "22f9f93b4d6a00e76980918b721f7f62654421d7582d486e830ec478c365707c"
+    sha256 = "75c4f8b4a270513e47a99e004353f8e450c3e8ed4c7e0a02bff11228d42c3e83"
+    source = "https://download.visualstudio.microsoft.com/download/pr/67843ba3-26f9-4746-bdfe-0f8074c00767/d51340f4f5cf8a361414650f510fe202/aspnetcore-runtime-3.1.18-linux-x64.tar.gz"
+    source_sha256 = "0eacc6ed1a979c1758aab42c2186321348af2a6ae43d185888a44782cc724c05"
     stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_5.0.7_linux_x64_any-stack_3b214b55.tar.xz"
-    version = "5.0.7"
+    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_3.1.18_linux_x64_any-stack_75c4f8b4.tar.xz"
+    version = "3.1.18"
 
   [[metadata.dependencies]]
     id = "dotnet-aspnetcore"
@@ -62,6 +53,15 @@ api = "0.2"
     stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
     uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_5.0.8_linux_x64_any-stack_bcb86ed7.tar.xz"
     version = "5.0.8"
+
+  [[metadata.dependencies]]
+    id = "dotnet-aspnetcore"
+    sha256 = "a6d36eff973c6b890d0713eb31077d1d69ff61702927642958e38aae865e93cd"
+    source = "https://download.visualstudio.microsoft.com/download/pr/19046594-e911-4784-a148-6de3d74d4a7f/d5c1ba792c4266a2d2a8eea41e81a060/aspnetcore-runtime-5.0.9-linux-x64.tar.gz"
+    source_sha256 = "b6cba668bf18981d2274d093a7acaedcd06fbf1929c864650f22f3cf3313481c"
+    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
+    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_5.0.9_linux_x64_any-stack_a6d36eff.tar.xz"
+    version = "5.0.9"
 
 [[stacks]]
   id = "io.buildpacks.stacks.bionic"
