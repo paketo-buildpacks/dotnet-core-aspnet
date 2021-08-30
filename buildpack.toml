@@ -63,6 +63,16 @@ api = "0.2"
     uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_5.0.9_linux_x64_any-stack_a6d36eff.tar.xz"
     version = "5.0.9"
 
+  [[metadata.dependency-constraints]]
+    constraint = "3.1.*"
+    id = "dotnet-aspnetcore"
+    patches = 2
+
+  [[metadata.dependency-constraints]]
+    constraint = "5.0.*"
+    id = "dotnet-aspnetcore"
+    patches = 2
+
 [[stacks]]
   id = "io.buildpacks.stacks.bionic"
 
