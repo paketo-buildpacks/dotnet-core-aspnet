@@ -10,57 +10,53 @@ api = "0.2"
   pre-package = "./scripts/build.sh"
 
   [[metadata.dependencies]]
+    cpe = "cpe:2.3:a:microsoft:asp.net_core:3.1:*:*:*:*:*:*:*"
+    deprecation_date = "2022-12-03T00:00:00Z"
     id = "dotnet-aspnetcore"
-    sha256 = "fdb3a0e310d754ed8a26d312d753c4524c3c8a03f2ed4e2c5c668780bfbe5957"
-    source = "https://download.visualstudio.microsoft.com/download/pr/5d7cfd65-4f71-46e8-b05b-d7ff8d0daa00/0f21d9c66047f10d385ce15935116506/aspnetcore-runtime-2.1.29-linux-x64.tar.gz"
-    source_sha256 = "80606998d3b6b11f12e0b39f8ccbd22599b7cc5684439958411c01f56b672c8b"
-    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_2.1.29_linux_x64_any-stack_fdb3a0e3.tar.xz"
-    version = "2.1.29"
-
-  [[metadata.dependencies]]
-    id = "dotnet-aspnetcore"
-    sha256 = "794a0965865c8bd7a4bece6bf864ac7bb4aae9deb3fc963ea04573f2110530d3"
-    source = "https://download.visualstudio.microsoft.com/download/pr/d6040f80-8343-4771-9c02-dbc9a35ac88a/68e74e6e46cf36fa1a50f68af6831d6d/aspnetcore-runtime-2.1.30-linux-x64.tar.gz"
-    source_sha256 = "8f86a893b0d694de1ac3948ac0be38e9c2fc5d6073e89fffa1c03995fa4f1f3e"
-    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_2.1.30_linux_x64_any-stack_794a0965.tar.xz"
-    version = "2.1.30"
-
-  [[metadata.dependencies]]
-    id = "dotnet-aspnetcore"
-    sha256 = "f6dedb579a283714187a2b3b9d38b583dab58bf6b28cdc39a9656deb94b1a8e2"
+    licenses = ["MIT", "MIT-0"]
+    purl = "pkg:generic/dotnet-aspnetcore@3.1.17?checksum=fa4354230a6f905e06bf14d8de760b23f4daba27cd8d0364760fcbbe09f32232&download_url=https://download.visualstudio.microsoft.com/download/pr/5f9e644f-4555-4a62-8f92-af1ee9634008/778036941916d560bef6da8899ac88f5/aspnetcore-runtime-3.1.17-linux-x64.tar.gz"
+    sha256 = "c7f1fcbf34fd337055ceea09bbfe3ffe544b7aeee3b8133a78e9b8b7d673958b"
     source = "https://download.visualstudio.microsoft.com/download/pr/5f9e644f-4555-4a62-8f92-af1ee9634008/778036941916d560bef6da8899ac88f5/aspnetcore-runtime-3.1.17-linux-x64.tar.gz"
     source_sha256 = "fa4354230a6f905e06bf14d8de760b23f4daba27cd8d0364760fcbbe09f32232"
-    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_3.1.17_linux_x64_any-stack_f6dedb57.tar.xz"
+    stacks = ["io.buildpacks.stacks.bionic"]
+    uri = "https://deps.paketo.io/dotnet-aspnetcore/dotnet-aspnetcore_3.1.17_linux_x64_bionic_c7f1fcbf.tar.xz"
     version = "3.1.17"
 
   [[metadata.dependencies]]
+    cpe = "cpe:2.3:a:microsoft:asp.net_core:3.1:*:*:*:*:*:*:*"
+    deprecation_date = "2022-12-03T00:00:00Z"
     id = "dotnet-aspnetcore"
-    sha256 = "75c4f8b4a270513e47a99e004353f8e450c3e8ed4c7e0a02bff11228d42c3e83"
+    licenses = ["MIT", "MIT-0"]
+    purl = "pkg:generic/dotnet-aspnetcore@3.1.18?checksum=0eacc6ed1a979c1758aab42c2186321348af2a6ae43d185888a44782cc724c05&download_url=https://download.visualstudio.microsoft.com/download/pr/67843ba3-26f9-4746-bdfe-0f8074c00767/d51340f4f5cf8a361414650f510fe202/aspnetcore-runtime-3.1.18-linux-x64.tar.gz"
+    sha256 = "f089debab0dce7509a4d59c4516571b0fea97691f30785e414026c959aa5d631"
     source = "https://download.visualstudio.microsoft.com/download/pr/67843ba3-26f9-4746-bdfe-0f8074c00767/d51340f4f5cf8a361414650f510fe202/aspnetcore-runtime-3.1.18-linux-x64.tar.gz"
     source_sha256 = "0eacc6ed1a979c1758aab42c2186321348af2a6ae43d185888a44782cc724c05"
-    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_3.1.18_linux_x64_any-stack_75c4f8b4.tar.xz"
+    stacks = ["io.buildpacks.stacks.bionic"]
+    uri = "https://deps.paketo.io/dotnet-aspnetcore/dotnet-aspnetcore_3.1.18_linux_x64_bionic_f089deba.tar.xz"
     version = "3.1.18"
 
   [[metadata.dependencies]]
+    cpe = "cpe:2.3:a:microsoft:asp.net_core:5.0:*:*:*:*:*:*:*"
     id = "dotnet-aspnetcore"
-    sha256 = "bcb86ed7bf27a340ddb75ada193e796b87523b6147c315d0ce6fd3ddc34ae408"
+    licenses = ["MIT", "MIT-0"]
+    purl = "pkg:generic/dotnet-aspnetcore@5.0.8?checksum=fce507e5e8b30464c8a4890d99d48a6b5f9ae04d0f9b2b7eb9b14b9ed783e55c&download_url=https://download.visualstudio.microsoft.com/download/pr/1b54c42a-4904-419b-8c24-bb2f39d4c8ae/279cd30211d8e5a9abf3129d04b4eb0e/aspnetcore-runtime-5.0.8-linux-x64.tar.gz"
+    sha256 = "d5ae194a56edbce171f21b39e1fbc0a90b65e63dcbdd7f52fc524af7b92dcc7b"
     source = "https://download.visualstudio.microsoft.com/download/pr/1b54c42a-4904-419b-8c24-bb2f39d4c8ae/279cd30211d8e5a9abf3129d04b4eb0e/aspnetcore-runtime-5.0.8-linux-x64.tar.gz"
     source_sha256 = "fce507e5e8b30464c8a4890d99d48a6b5f9ae04d0f9b2b7eb9b14b9ed783e55c"
-    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_5.0.8_linux_x64_any-stack_bcb86ed7.tar.xz"
+    stacks = ["io.buildpacks.stacks.bionic"]
+    uri = "https://deps.paketo.io/dotnet-aspnetcore/dotnet-aspnetcore_5.0.8_linux_x64_bionic_d5ae194a.tar.xz"
     version = "5.0.8"
 
   [[metadata.dependencies]]
+    cpe = "cpe:2.3:a:microsoft:asp.net_core:5.0:*:*:*:*:*:*:*"
     id = "dotnet-aspnetcore"
-    sha256 = "a6d36eff973c6b890d0713eb31077d1d69ff61702927642958e38aae865e93cd"
+    licenses = ["MIT", "MIT-0"]
+    purl = "pkg:generic/dotnet-aspnetcore@5.0.9?checksum=b6cba668bf18981d2274d093a7acaedcd06fbf1929c864650f22f3cf3313481c&download_url=https://download.visualstudio.microsoft.com/download/pr/19046594-e911-4784-a148-6de3d74d4a7f/d5c1ba792c4266a2d2a8eea41e81a060/aspnetcore-runtime-5.0.9-linux-x64.tar.gz"
+    sha256 = "1f2145b038777e1452b3707a24e016dcda16c0623f7e42df321dee89f4d7a2cc"
     source = "https://download.visualstudio.microsoft.com/download/pr/19046594-e911-4784-a148-6de3d74d4a7f/d5c1ba792c4266a2d2a8eea41e81a060/aspnetcore-runtime-5.0.9-linux-x64.tar.gz"
     source_sha256 = "b6cba668bf18981d2274d093a7acaedcd06fbf1929c864650f22f3cf3313481c"
-    stacks = ["io.buildpacks.stacks.bionic", "org.cloudfoundry.stacks.cflinuxfs3"]
-    uri = "https://buildpacks.cloudfoundry.org/dependencies/dotnet-aspnetcore/dotnet-aspnetcore_5.0.9_linux_x64_any-stack_a6d36eff.tar.xz"
+    stacks = ["io.buildpacks.stacks.bionic"]
+    uri = "https://deps.paketo.io/dotnet-aspnetcore/dotnet-aspnetcore_5.0.9_linux_x64_bionic_1f2145b0.tar.xz"
     version = "5.0.9"
 
   [[metadata.dependency-constraints]]
