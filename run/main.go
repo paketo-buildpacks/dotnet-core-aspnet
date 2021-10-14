@@ -16,7 +16,6 @@ func main() {
 	logEmitter := dotnetcoreaspnet.NewLogEmitter(os.Stdout)
 	entryResolver := draft.NewPlanner()
 	dependencyManager := postal.NewService(cargo.NewTransport())
-	planRefinery := dotnetcoreaspnet.NewPlanRefinery()
 	dotnetRootLinker := dotnetcoreaspnet.NewDotnetRootLinker()
 
 	packit.Run(
@@ -24,7 +23,6 @@ func main() {
 		dotnetcoreaspnet.Build(
 			entryResolver,
 			dependencyManager,
-			planRefinery,
 			dotnetRootLinker,
 			logEmitter,
 			chronos.DefaultClock,

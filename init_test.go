@@ -13,7 +13,6 @@ func TestUnitDotnetCoreAspnet(t *testing.T) {
 	suite("BuildpackYMLParser", testBuildpackYMLParser)
 	suite("Detect", testDetect)
 	suite("LogEmitter", testLogEmitter)
-	suite("PlanRefinery", testPlanRefinery)
 	suite("DotnetRootLinker", testDotnetRootLinker)
 	suite.Run(t)
 }

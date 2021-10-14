@@ -22,11 +22,7 @@ type EntryResolver interface {
 type DependencyManager interface {
 	Resolve(path, id, version, stack string) (postal.Dependency, error)
 	Install(dependency postal.Dependency, cnbPath, layerPath string) error
-}
-
-//go:generate faux --interface BuildPlanRefinery --output fakes/build_plan_refinery.go
-type BuildPlanRefinery interface {
-	BillOfMaterial(dependency postal.Dependency) packit.BuildpackPlan
+	GenerateBillOfMaterials(dependencies ...postal.Dependency) []packit.BOMEntry
 }
 
 //go:generate faux --interface Symlinker --output fakes/symlinker.go
@@ -34,7 +30,7 @@ type Symlinker interface {
 	Link(workingDir, layerPath string) (Err error)
 }
 
-func Build(entries EntryResolver, dependencies DependencyManager, planRefinery BuildPlanRefinery, symlinker Symlinker, logger LogEmitter, clock chronos.Clock) packit.BuildFunc {
+func Build(entries EntryResolver, dependencies DependencyManager, symlinker Symlinker, logger LogEmitter, clock chronos.Clock) packit.BuildFunc {
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
 		logger.Process("Resolving Dotnet Core ASPNet version")
@@ -82,14 +78,18 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 			return packit.BuildResult{}, err
 		}
 
-		bom := planRefinery.BillOfMaterial(postal.Dependency{
-			ID:      dependency.ID,
-			Name:    dependency.Name,
-			SHA256:  dependency.SHA256,
-			Stacks:  dependency.Stacks,
-			URI:     dependency.URI,
-			Version: dependency.Version,
-		})
+		bom := dependencies.GenerateBillOfMaterials(dependency)
+		launch, build := entries.MergeLayerTypes("dotnet-aspnetcore", context.Plan.Entries)
+
+		var buildMetadata packit.BuildMetadata
+		if build {
+			buildMetadata.BOM = bom
+		}
+
+		var launchMetadata packit.LaunchMetadata
+		if launch {
+			launchMetadata.BOM = bom
+		}
 
 		cachedSHA, ok := aspNetLayer.Metadata["dependency-sha"].(string)
 		if ok && cachedSHA == dependency.SHA256 {
@@ -102,8 +102,9 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 			}
 
 			return packit.BuildResult{
-				Plan:   bom,
 				Layers: []packit.Layer{aspNetLayer},
+				Build:  buildMetadata,
+				Launch: launchMetadata,
 			}, nil
 		}
 		logger.Process("Executing build process")
@@ -113,8 +114,7 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 			return packit.BuildResult{}, err
 		}
 
-		aspNetLayer.Launch, aspNetLayer.Build = entries.MergeLayerTypes("dotnet-aspnetcore", context.Plan.Entries)
-		aspNetLayer.Cache = aspNetLayer.Launch || aspNetLayer.Build
+		aspNetLayer.Launch, aspNetLayer.Build, aspNetLayer.Cache = launch, build, launch || build
 
 		logger.Subprocess("Installing Dotnet Core ASPNet %s", dependency.Version)
 		duration, err := clock.Measure(func() error {
@@ -141,8 +141,9 @@ func Build(entries EntryResolver, dependencies DependencyManager, planRefinery B
 		}
 
 		return packit.BuildResult{
-			Plan:   bom,
 			Layers: []packit.Layer{aspNetLayer},
+			Build:  buildMetadata,
+			Launch: launchMetadata,
 		}, nil
 	}
 }
