@@ -101,6 +101,8 @@ func Build(entries EntryResolver, dependencies DependencyManager, symlinker Syml
 				return packit.BuildResult{}, err
 			}
 
+			aspNetLayer.Launch, aspNetLayer.Build, aspNetLayer.Cache = launch, build, build
+
 			return packit.BuildResult{
 				Layers: []packit.Layer{aspNetLayer},
 				Build:  buildMetadata,

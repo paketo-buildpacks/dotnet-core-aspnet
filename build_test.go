@@ -331,10 +331,12 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				ID:     "dotnet-aspnetcore",
 				SHA256: "some-sha",
 			}
+			entryResolver.MergeLayerTypesCall.Returns.Launch = false
+			entryResolver.MergeLayerTypesCall.Returns.Build = true
 		})
 
 		it("exits build process early", func() {
-			_, err := build(packit.BuildContext{
+			result, err := build(packit.BuildContext{
 				WorkingDir: workingDir,
 				CNBPath:    cnbDir,
 				Stack:      "some-stack",
@@ -356,6 +358,39 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Layers: packit.Layers{Path: layersDir},
 			})
 			Expect(err).NotTo(HaveOccurred())
+			Expect(result).To(Equal(packit.BuildResult{
+				Layers: []packit.Layer{
+					{
+						Name:             "dotnet-core-aspnet",
+						Path:             filepath.Join(layersDir, "dotnet-core-aspnet"),
+						SharedEnv:        packit.Environment{},
+						LaunchEnv:        packit.Environment{},
+						BuildEnv:         packit.Environment{},
+						ProcessLaunchEnv: map[string]packit.Environment{},
+						Build:            true,
+						Launch:           false,
+						Cache:            true,
+						Metadata: map[string]interface{}{
+							"dependency-sha": "some-sha",
+						},
+					},
+				},
+				Build: packit.BuildMetadata{
+					BOM: []packit.BOMEntry{
+						{
+							Name: "dotnet-aspnetcore",
+							Metadata: packit.BOMMetadata{
+								Version: "dotnet-aspnetcore-dep-version",
+								Checksum: packit.BOMChecksum{
+									Algorithm: packit.SHA256,
+									Hash:      "dotnet-aspnetcore-dep-sha",
+								},
+								URI: "dotnet-aspnetcore-dep-uri",
+							},
+						},
+					},
+				},
+			}))
 
 			Expect(dependencyManager.GenerateBillOfMaterialsCall.Receives.Dependencies).To(Equal([]postal.Dependency{
 				{
