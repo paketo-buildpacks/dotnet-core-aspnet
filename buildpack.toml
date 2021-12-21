@@ -1,9 +1,15 @@
 api = "0.6"
 
 [buildpack]
+  description = "A buildpack for installing the approriate .NET Core ASP.NET version"
   homepage = "https://github.com/paketo-buildpacks/dotnet-core-aspnet"
   id = "paketo-buildpacks/dotnet-core-aspnet"
+  keywords = ["dotnet", "ASP.NET"]
   name = "Paketo ASP.NET Core Buildpack"
+
+  [[buildpack.licenses]]
+    type = "Apache-2.0"
+    uri = "https://github.com/paketo-buildpacks/dotnet-core-aspnet/blob/main/LICENSE"
 
 [metadata]
   include-files = ["bin/build", "bin/detect", "bin/run", "buildpack.toml"]
