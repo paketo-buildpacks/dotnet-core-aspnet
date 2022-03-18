@@ -14,7 +14,6 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/chronos"
 
 	//nolint Ignore SA1019, informed usage of deprecated package
-
 	"github.com/paketo-buildpacks/packit/v2/paketosbom"
 	"github.com/paketo-buildpacks/packit/v2/postal"
 	"github.com/sclevine/spec"
