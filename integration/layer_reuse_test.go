@@ -2,7 +2,6 @@ package integration_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -155,7 +154,7 @@ func testLayerReuse(t *testing.T, context spec.G, it spec.S) {
 			source, err = occam.Source(filepath.Join("testdata", "default_app"))
 			Expect(err).NotTo(HaveOccurred())
 
-			err = ioutil.WriteFile(filepath.Join(source, "buildpack.yml"), []byte(`---
+			err = os.WriteFile(filepath.Join(source, "buildpack.yml"), []byte(`---
 dotnet-framework:
   version: "3.*"
 `), os.ModePerm)
@@ -200,7 +199,7 @@ dotnet-framework:
 			}).Should(ContainSubstring("AspNetCore.dll exists"))
 
 			// Second pack build
-			err = ioutil.WriteFile(filepath.Join(source, "buildpack.yml"), []byte(`---
+			err = os.WriteFile(filepath.Join(source, "buildpack.yml"), []byte(`---
 dotnet-framework:
   version: "5.*"
 `), os.ModePerm)
