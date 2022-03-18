@@ -3,7 +3,6 @@ package dotnetcoreaspnet_test
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,9 +10,12 @@ import (
 
 	dotnetcoreaspnet "github.com/paketo-buildpacks/dotnet-core-aspnet"
 	"github.com/paketo-buildpacks/dotnet-core-aspnet/fakes"
-	"github.com/paketo-buildpacks/packit"
-	"github.com/paketo-buildpacks/packit/chronos"
-	"github.com/paketo-buildpacks/packit/postal"
+	"github.com/paketo-buildpacks/packit/v2"
+	"github.com/paketo-buildpacks/packit/v2/chronos"
+
+	//nolint Ignore SA1019, informed usage of deprecated package
+	"github.com/paketo-buildpacks/packit/v2/paketosbom"
+	"github.com/paketo-buildpacks/packit/v2/postal"
 	"github.com/sclevine/spec"
 
 	. "github.com/onsi/gomega"
@@ -38,13 +40,13 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 	it.Before(func() {
 		var err error
-		layersDir, err = ioutil.TempDir("", "layers")
+		layersDir, err = os.MkdirTemp("", "layers")
 		Expect(err).NotTo(HaveOccurred())
 
-		cnbDir, err = ioutil.TempDir("", "cnb")
+		cnbDir, err = os.MkdirTemp("", "cnb")
 		Expect(err).NotTo(HaveOccurred())
 
-		workingDir, err = ioutil.TempDir("", "working-dir")
+		workingDir, err = os.MkdirTemp("", "working-dir")
 		Expect(err).NotTo(HaveOccurred())
 
 		entryResolver = &fakes.EntryResolver{}
@@ -64,10 +66,10 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		dependencyManager.GenerateBillOfMaterialsCall.Returns.BOMEntrySlice = []packit.BOMEntry{
 			{
 				Name: "dotnet-aspnetcore",
-				Metadata: packit.BOMMetadata{
+				Metadata: paketosbom.BOMMetadata{
 					Version: "dotnet-aspnetcore-dep-version",
-					Checksum: packit.BOMChecksum{
-						Algorithm: packit.SHA256,
+					Checksum: paketosbom.BOMChecksum{
+						Algorithm: paketosbom.SHA256,
 						Hash:      "dotnet-aspnetcore-dep-sha",
 					},
 					URI: "dotnet-aspnetcore-dep-uri",
@@ -103,6 +105,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Name:    "Some Buildpack",
 				Version: "some-version",
 			},
+			Platform: packit.Platform{Path: "platform"},
 			Plan: packit.BuildpackPlan{
 				Entries: []packit.BuildpackPlanEntry{
 					{
@@ -152,9 +155,10 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			},
 		}))
 
-		Expect(dependencyManager.InstallCall.Receives.Dependency).To(Equal(postal.Dependency{ID: "dotnet-aspnetcore", Name: "Dotnet Core ASPNet"}))
-		Expect(dependencyManager.InstallCall.Receives.CnbPath).To(Equal(cnbDir))
-		Expect(dependencyManager.InstallCall.Receives.LayerPath).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
+		Expect(dependencyManager.DeliverCall.Receives.Dependency).To(Equal(postal.Dependency{ID: "dotnet-aspnetcore", Name: "Dotnet Core ASPNet"}))
+		Expect(dependencyManager.DeliverCall.Receives.CnbPath).To(Equal(cnbDir))
+		Expect(dependencyManager.DeliverCall.Receives.LayerPath).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
+		Expect(dependencyManager.DeliverCall.Receives.PlatformPath).To(Equal("platform"))
 
 		Expect(symlinker.LinkCall.CallCount).To(Equal(1))
 		Expect(symlinker.LinkCall.Receives.WorkingDir).To(Equal(workingDir))
@@ -292,10 +296,10 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					BOM: []packit.BOMEntry{
 						{
 							Name: "dotnet-aspnetcore",
-							Metadata: packit.BOMMetadata{
+							Metadata: paketosbom.BOMMetadata{
 								Version: "dotnet-aspnetcore-dep-version",
-								Checksum: packit.BOMChecksum{
-									Algorithm: packit.SHA256,
+								Checksum: paketosbom.BOMChecksum{
+									Algorithm: paketosbom.SHA256,
 									Hash:      "dotnet-aspnetcore-dep-sha",
 								},
 								URI: "dotnet-aspnetcore-dep-uri",
@@ -307,10 +311,10 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					BOM: []packit.BOMEntry{
 						{
 							Name: "dotnet-aspnetcore",
-							Metadata: packit.BOMMetadata{
+							Metadata: paketosbom.BOMMetadata{
 								Version: "dotnet-aspnetcore-dep-version",
-								Checksum: packit.BOMChecksum{
-									Algorithm: packit.SHA256,
+								Checksum: paketosbom.BOMChecksum{
+									Algorithm: paketosbom.SHA256,
 									Hash:      "dotnet-aspnetcore-dep-sha",
 								},
 								URI: "dotnet-aspnetcore-dep-uri",
@@ -324,7 +328,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 	context("when there is a dependency cache match", func() {
 		it.Before(func() {
-			err := ioutil.WriteFile(filepath.Join(layersDir, "dotnet-core-aspnet.toml"), []byte("[metadata]\ndependency-sha = \"some-sha\"\n"), 0600)
+			err := os.WriteFile(filepath.Join(layersDir, "dotnet-core-aspnet.toml"), []byte("[metadata]\ndependency-sha = \"some-sha\"\n"), 0600)
 			Expect(err).NotTo(HaveOccurred())
 
 			dependencyManager.ResolveCall.Returns.Dependency = postal.Dependency{
@@ -379,10 +383,10 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					BOM: []packit.BOMEntry{
 						{
 							Name: "dotnet-aspnetcore",
-							Metadata: packit.BOMMetadata{
+							Metadata: paketosbom.BOMMetadata{
 								Version: "dotnet-aspnetcore-dep-version",
-								Checksum: packit.BOMChecksum{
-									Algorithm: packit.SHA256,
+								Checksum: paketosbom.BOMChecksum{
+									Algorithm: paketosbom.SHA256,
 									Hash:      "dotnet-aspnetcore-dep-sha",
 								},
 								URI: "dotnet-aspnetcore-dep-uri",
@@ -403,7 +407,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Expect(symlinker.LinkCall.Receives.WorkingDir).To(Equal(workingDir))
 			Expect(symlinker.LinkCall.Receives.LayerPath).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
 
-			Expect(dependencyManager.InstallCall.CallCount).To(Equal(0))
+			Expect(dependencyManager.DeliverCall.CallCount).To(Equal(0))
 
 			Expect(buffer.String()).To(ContainSubstring("Some Buildpack some-version"))
 			Expect(buffer.String()).To(ContainSubstring("Resolving Dotnet Core ASPNet version"))
@@ -481,7 +485,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		context("when the dotnet symlinker fails on a rebuild", func() {
 			it.Before(func() {
-				err := ioutil.WriteFile(filepath.Join(layersDir, "dotnet-core-aspnet.toml"), []byte("[metadata]\ndependency-sha = \"some-sha\"\n"), 0600)
+				err := os.WriteFile(filepath.Join(layersDir, "dotnet-core-aspnet.toml"), []byte("[metadata]\ndependency-sha = \"some-sha\"\n"), 0600)
 				Expect(err).NotTo(HaveOccurred())
 
 				dependencyManager.ResolveCall.Returns.Dependency = postal.Dependency{
@@ -515,7 +519,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		context("when the dotnet-core-aspnet layer cannot be retrieved", func() {
 			it.Before(func() {
-				err := ioutil.WriteFile(filepath.Join(layersDir, "dotnet-core-aspnet.toml"), nil, 0000)
+				err := os.WriteFile(filepath.Join(layersDir, "dotnet-core-aspnet.toml"), nil, 0000)
 				Expect(err).NotTo(HaveOccurred())
 			})
 
@@ -561,7 +565,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		context("when the dependency cannot be installed", func() {
 			it.Before(func() {
-				dependencyManager.InstallCall.Returns.Error = errors.New("failed to install dependency")
+				dependencyManager.DeliverCall.Returns.Error = errors.New("failed to install dependency")
 			})
 
 			it("returns an error", func() {

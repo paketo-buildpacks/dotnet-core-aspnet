@@ -4,11 +4,11 @@ import (
 	"os"
 
 	dotnetcoreaspnet "github.com/paketo-buildpacks/dotnet-core-aspnet"
-	"github.com/paketo-buildpacks/packit"
-	"github.com/paketo-buildpacks/packit/cargo"
-	"github.com/paketo-buildpacks/packit/chronos"
-	"github.com/paketo-buildpacks/packit/draft"
-	"github.com/paketo-buildpacks/packit/postal"
+	"github.com/paketo-buildpacks/packit/v2"
+	"github.com/paketo-buildpacks/packit/v2/cargo"
+	"github.com/paketo-buildpacks/packit/v2/chronos"
+	"github.com/paketo-buildpacks/packit/v2/draft"
+	"github.com/paketo-buildpacks/packit/v2/postal"
 )
 
 func main() {
