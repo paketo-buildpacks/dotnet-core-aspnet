@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	dotnetcoreaspnet "github.com/paketo-buildpacks/dotnet-core-aspnet"
 	"github.com/paketo-buildpacks/dotnet-core-aspnet/fakes"
@@ -31,8 +30,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		entryResolver     *fakes.EntryResolver
 		dependencyManager *fakes.DependencyManager
 		symlinker         *fakes.Symlinker
-		clock             chronos.Clock
-		timeStamp         time.Time
 		buffer            *bytes.Buffer
 
 		build packit.BuildFunc
@@ -82,12 +79,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		buffer = bytes.NewBuffer(nil)
 		logEmitter := dotnetcoreaspnet.NewLogEmitter(buffer)
 
-		timeStamp = time.Now()
-		clock = chronos.NewClock(func() time.Time {
-			return timeStamp
-		})
-
-		build = dotnetcoreaspnet.Build(entryResolver, dependencyManager, symlinker, logEmitter, clock)
+		build = dotnetcoreaspnet.Build(entryResolver, dependencyManager, symlinker, logEmitter, chronos.DefaultClock)
 	})
 
 	it.After(func() {
@@ -137,7 +129,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					Cache:            false,
 					Metadata: map[string]interface{}{
 						"dependency-sha": "",
-						"built_at":       timeStamp.Format(time.RFC3339Nano),
 					},
 				},
 			},
@@ -214,7 +205,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 						Cache:            false,
 						Metadata: map[string]interface{}{
 							"dependency-sha": "",
-							"built_at":       timeStamp.Format(time.RFC3339Nano),
 						},
 					},
 				},
@@ -288,7 +278,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 						Cache:            true,
 						Metadata: map[string]interface{}{
 							"dependency-sha": "",
-							"built_at":       timeStamp.Format(time.RFC3339Nano),
 						},
 					},
 				},

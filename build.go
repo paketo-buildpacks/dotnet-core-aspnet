@@ -131,7 +131,6 @@ func Build(entries EntryResolver, dependencies DependencyManager, symlinker Syml
 
 		aspNetLayer.Metadata = map[string]interface{}{
 			"dependency-sha": dependency.SHA256,
-			"built_at":       clock.Now().Format(time.RFC3339Nano),
 		}
 
 		aspNetLayer.SharedEnv.Override("DOTNET_ROOT", filepath.Join(context.WorkingDir, ".dotnet_root"))
