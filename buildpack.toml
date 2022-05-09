@@ -99,11 +99,6 @@ api = "0.6"
     patches = 2
 
   [[metadata.dependency-constraints]]
-    constraint = "5.0.*"
-    id = "dotnet-aspnetcore"
-    patches = 2
-
-  [[metadata.dependency-constraints]]
     constraint = "6.0.*"
     id = "dotnet-aspnetcore"
     patches = 2
