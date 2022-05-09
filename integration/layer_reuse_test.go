@@ -154,12 +154,6 @@ func testLayerReuse(t *testing.T, context spec.G, it spec.S) {
 			source, err = occam.Source(filepath.Join("testdata", "default_app"))
 			Expect(err).NotTo(HaveOccurred())
 
-			err = os.WriteFile(filepath.Join(source, "buildpack.yml"), []byte(`---
-dotnet-framework:
-  version: "3.*"
-`), os.ModePerm)
-			Expect(err).NotTo(HaveOccurred())
-
 			build := pack.WithNoColor().Build.
 				WithPullPolicy("never").
 				WithBuildpacks(
@@ -168,7 +162,9 @@ dotnet-framework:
 					buildPlanBuildpack,
 				)
 
-			firstImage, logs, err = build.Execute(name, source)
+			firstImage, logs, err = build.WithEnv(map[string]string{
+				"BP_DOTNET_FRAMEWORK_VERSION": "3.*",
+			}).Execute(name, source)
 			Expect(err).NotTo(HaveOccurred())
 
 			imageIDs[firstImage.ID] = struct{}{}
@@ -199,13 +195,10 @@ dotnet-framework:
 			}).Should(ContainSubstring("AspNetCore.dll exists"))
 
 			// Second pack build
-			err = os.WriteFile(filepath.Join(source, "buildpack.yml"), []byte(`---
-dotnet-framework:
-  version: "5.*"
-`), os.ModePerm)
-			Expect(err).NotTo(HaveOccurred())
+			secondImage, logs, err = build.WithEnv(map[string]string{
+				"BP_DOTNET_FRAMEWORK_VERSION": "6.*",
+			}).Execute(name, source)
 
-			secondImage, logs, err = build.Execute(name, source)
 			Expect(err).NotTo(HaveOccurred())
 
 			imageIDs[secondImage.ID] = struct{}{}
