@@ -1,6 +1,6 @@
 # ASPNet Cloud Native Buildpack
 
-The Dotnet Core ASPNet CNB provides a version of the [Dotnet Core
+The .NET Core ASPNet CNB provides a version of the [.NET Core
 ASPNet Framework](https://github.com/aspnet) and sets an extension of the `$DOTNET_ROOT`
 location.
 
@@ -10,8 +10,8 @@ directory](https://github.com/paketo-buildpacks/samples/tree/main/dotnet-core/as
 
 ## Integration
 
-The Dotnet Core ASPNet CNB provides `dotnet-aspnetcore` as a dependency.
-Downstream buildpacks, like [Dotnet Core
+The .NET Core ASPNet CNB provides `dotnet-aspnetcore` as a dependency.
+Downstream buildpacks, like [.NET Core
 Build](https://github.com/paketo-buildpacks/dotnet-core-build) and [Dotnet
 Core SDK](https://github.com/paketo-buildpacks/dotnet-core-sdk) can require the
 dotnet-aspnetcore dependency by generating a [Build Plan

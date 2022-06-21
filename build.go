@@ -10,6 +10,8 @@ import (
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
 	"github.com/paketo-buildpacks/packit/v2/postal"
+	"github.com/paketo-buildpacks/packit/v2/sbom"
+	"github.com/paketo-buildpacks/packit/v2/scribe"
 )
 
 //go:generate faux --interface EntryResolver --output fakes/entry_resolver.go
@@ -30,10 +32,22 @@ type Symlinker interface {
 	Link(workingDir, layerPath string) (Err error)
 }
 
-func Build(entries EntryResolver, dependencies DependencyManager, symlinker Symlinker, logger LogEmitter, clock chronos.Clock) packit.BuildFunc {
+//go:generate faux --interface SBOMGenerator --output fakes/sbom_generator.go
+type SBOMGenerator interface {
+	GenerateFromDependency(dependency postal.Dependency, dir string) (sbom.SBOM, error)
+}
+
+func Build(
+	entries EntryResolver,
+	dependencies DependencyManager,
+	symlinker Symlinker,
+	sbomGenerator SBOMGenerator,
+	logger scribe.Emitter,
+	clock chronos.Clock,
+) packit.BuildFunc {
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
-		logger.Process("Resolving Dotnet Core ASPNet version")
+		logger.Process("Resolving .NET Core ASPNet version")
 
 		if v, ok := os.LookupEnv("RUNTIME_VERSION"); ok {
 			context.Plan.Entries = append(context.Plan.Entries, packit.BuildpackPlanEntry{
@@ -61,7 +75,7 @@ func Build(entries EntryResolver, dependencies DependencyManager, symlinker Syml
 		source, _ := entry.Metadata["version-source"].(string)
 		if source == "buildpack.yml" {
 			nextMajorVersion := semver.MustParse(context.BuildpackInfo.Version).IncMajor()
-			logger.Subprocess("WARNING: Setting the .NET Framework version through buildpack.yml will be deprecated soon in Dotnet Core ASPNet Buildpack v%s.", nextMajorVersion.String())
+			logger.Subprocess("WARNING: Setting the .NET Framework version through buildpack.yml will be deprecated soon in .NET Core ASPNet Buildpack v%s.", nextMajorVersion.String())
 			logger.Subprocess("Please specify the version through the $BP_DOTNET_FRAMEWORK_VERSION environment variable instead. See docs for more information.")
 			logger.Break()
 		}
@@ -118,7 +132,7 @@ func Build(entries EntryResolver, dependencies DependencyManager, symlinker Syml
 
 		aspNetLayer.Launch, aspNetLayer.Build, aspNetLayer.Cache = launch, build, launch || build
 
-		logger.Subprocess("Installing Dotnet Core ASPNet %s", dependency.Version)
+		logger.Subprocess("Installing .NET Core ASPNet %s", dependency.Version)
 		duration, err := clock.Measure(func() error {
 			return dependencies.Deliver(dependency, context.CNBPath, aspNetLayer.Path, context.Platform.Path)
 		})
@@ -134,9 +148,28 @@ func Build(entries EntryResolver, dependencies DependencyManager, symlinker Syml
 		}
 
 		aspNetLayer.SharedEnv.Override("DOTNET_ROOT", filepath.Join(context.WorkingDir, ".dotnet_root"))
-		logger.Environment(aspNetLayer.SharedEnv)
+		logger.EnvironmentVariables(aspNetLayer)
 
 		err = symlinker.Link(context.WorkingDir, aspNetLayer.Path)
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		logger.GeneratingSBOM(aspNetLayer.Path)
+		var sbomContent sbom.SBOM
+		duration, err = clock.Measure(func() error {
+			sbomContent, err = sbomGenerator.GenerateFromDependency(dependency, aspNetLayer.Path)
+			return err
+		})
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		logger.Action("Completed in %s", duration.Round(time.Millisecond))
+		logger.Break()
+
+		logger.FormattingSBOM(context.BuildpackInfo.SBOMFormats...)
+		aspNetLayer.SBOM, err = sbomContent.InFormats(context.BuildpackInfo.SBOMFormats...)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
