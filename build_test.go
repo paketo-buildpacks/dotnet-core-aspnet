@@ -61,7 +61,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		dependencyManager = &fakes.DependencyManager{}
 		dependencyManager.ResolveCall.Returns.Dependency = postal.Dependency{
 			ID:   "dotnet-aspnetcore",
-			Name: "Dotnet Core ASPNet",
+			Name: ".NET Core ASPNet",
 		}
 		dependencyManager.GenerateBillOfMaterialsCall.Returns.BOMEntrySlice = []packit.BOMEntry{
 			{
@@ -150,11 +150,11 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(dependencyManager.GenerateBillOfMaterialsCall.Receives.Dependencies).To(Equal([]postal.Dependency{
 			{
 				ID:   "dotnet-aspnetcore",
-				Name: "Dotnet Core ASPNet",
+				Name: ".NET Core ASPNet",
 			},
 		}))
 
-		Expect(dependencyManager.DeliverCall.Receives.Dependency).To(Equal(postal.Dependency{ID: "dotnet-aspnetcore", Name: "Dotnet Core ASPNet"}))
+		Expect(dependencyManager.DeliverCall.Receives.Dependency).To(Equal(postal.Dependency{ID: "dotnet-aspnetcore", Name: ".NET Core ASPNet"}))
 		Expect(dependencyManager.DeliverCall.Receives.CnbPath).To(Equal(cnbDir))
 		Expect(dependencyManager.DeliverCall.Receives.LayerPath).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
 		Expect(dependencyManager.DeliverCall.Receives.PlatformPath).To(Equal("platform"))
@@ -165,7 +165,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		Expect(sbomGenerator.GenerateFromDependencyCall.Receives.Dependency).To(Equal(postal.Dependency{
 			ID:   "dotnet-aspnetcore",
-			Name: "Dotnet Core ASPNet",
+			Name: ".NET Core ASPNet",
 		}))
 		Expect(sbomGenerator.GenerateFromDependencyCall.Receives.Dir).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
 	})
@@ -316,7 +316,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 			dependencyManager.ResolveCall.Returns.Dependency = postal.Dependency{
 				ID:     "dotnet-aspnetcore",
-				Name:   "Dotnet Core ASPNet",
+				Name:   ".NET Core ASPNet",
 				SHA256: "some-sha",
 			}
 			entryResolver.MergeLayerTypesCall.Returns.Launch = false
@@ -375,7 +375,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Expect(dependencyManager.GenerateBillOfMaterialsCall.Receives.Dependencies).To(Equal([]postal.Dependency{
 				{
 					ID:     "dotnet-aspnetcore",
-					Name:   "Dotnet Core ASPNet",
+					Name:   ".NET Core ASPNet",
 					SHA256: "some-sha",
 				},
 			}))
@@ -387,8 +387,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Expect(dependencyManager.DeliverCall.CallCount).To(Equal(0))
 
 			Expect(buffer.String()).To(ContainSubstring("Some Buildpack some-version"))
-			Expect(buffer.String()).To(ContainSubstring("Resolving Dotnet Core ASPNet version"))
-			Expect(buffer.String()).To(ContainSubstring("Selected Dotnet Core ASPNet version (using BP_DOTNET_FRAMEWORK_VERSION): "))
+			Expect(buffer.String()).To(ContainSubstring("Resolving .NET Core ASPNet version"))
+			Expect(buffer.String()).To(ContainSubstring("Selected .NET Core ASPNet version (using BP_DOTNET_FRAMEWORK_VERSION): "))
 			Expect(buffer.String()).To(ContainSubstring("Reusing cached layer"))
 			Expect(buffer.String()).ToNot(ContainSubstring("Executing build process"))
 		})
@@ -429,10 +429,10 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(buffer.String()).To(ContainSubstring("Some Buildpack 0.1.2"))
-			Expect(buffer.String()).To(ContainSubstring("Resolving Dotnet Core ASPNet version"))
-			Expect(buffer.String()).To(ContainSubstring("Selected Dotnet Core ASPNet version (using buildpack.yml): "))
+			Expect(buffer.String()).To(ContainSubstring("Resolving .NET Core ASPNet version"))
+			Expect(buffer.String()).To(ContainSubstring("Selected .NET Core ASPNet version (using buildpack.yml): "))
 			// v1.0.0 because that's the next major after input version v0.1.2
-			Expect(buffer.String()).To(ContainSubstring("WARNING: Setting the .NET Framework version through buildpack.yml will be deprecated soon in Dotnet Core ASPNet Buildpack v1.0.0."))
+			Expect(buffer.String()).To(ContainSubstring("WARNING: Setting the .NET Framework version through buildpack.yml will be deprecated soon in .NET Core ASPNet Buildpack v1.0.0."))
 			Expect(buffer.String()).To(ContainSubstring("Please specify the version through the $BP_DOTNET_FRAMEWORK_VERSION environment variable instead. See docs for more information."))
 			Expect(buffer.String()).To(ContainSubstring("Executing build process"))
 			Expect(buffer.String()).To(ContainSubstring("Configuring build environment"))

@@ -47,7 +47,7 @@ func Build(
 ) packit.BuildFunc {
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
-		logger.Process("Resolving Dotnet Core ASPNet version")
+		logger.Process("Resolving .NET Core ASPNet version")
 
 		if v, ok := os.LookupEnv("RUNTIME_VERSION"); ok {
 			context.Plan.Entries = append(context.Plan.Entries, packit.BuildpackPlanEntry{
@@ -75,7 +75,7 @@ func Build(
 		source, _ := entry.Metadata["version-source"].(string)
 		if source == "buildpack.yml" {
 			nextMajorVersion := semver.MustParse(context.BuildpackInfo.Version).IncMajor()
-			logger.Subprocess("WARNING: Setting the .NET Framework version through buildpack.yml will be deprecated soon in Dotnet Core ASPNet Buildpack v%s.", nextMajorVersion.String())
+			logger.Subprocess("WARNING: Setting the .NET Framework version through buildpack.yml will be deprecated soon in .NET Core ASPNet Buildpack v%s.", nextMajorVersion.String())
 			logger.Subprocess("Please specify the version through the $BP_DOTNET_FRAMEWORK_VERSION environment variable instead. See docs for more information.")
 			logger.Break()
 		}
@@ -132,7 +132,7 @@ func Build(
 
 		aspNetLayer.Launch, aspNetLayer.Build, aspNetLayer.Cache = launch, build, launch || build
 
-		logger.Subprocess("Installing Dotnet Core ASPNet %s", dependency.Version)
+		logger.Subprocess("Installing .NET Core ASPNet %s", dependency.Version)
 		duration, err := clock.Measure(func() error {
 			return dependencies.Deliver(dependency, context.CNBPath, aspNetLayer.Path, context.Platform.Path)
 		})

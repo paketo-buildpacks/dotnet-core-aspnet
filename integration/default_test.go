@@ -75,15 +75,15 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(logs).To(ContainLines(
 				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
-				"  Resolving Dotnet Core ASPNet version",
+				"  Resolving .NET Core ASPNet version",
 				"    Candidate version sources (in priority order):",
 				MatchRegexp(`      RUNTIME_VERSION -> "\d+\.\d+\.\d+"`),
 				"      <unknown>       -> \"\"",
 				"",
-				MatchRegexp(`    Selected Dotnet Core ASPNet version \(using RUNTIME_VERSION\): \d+\.\d+\.\d+`),
+				MatchRegexp(`    Selected .NET Core ASPNet version \(using RUNTIME_VERSION\): \d+\.\d+\.\d+`),
 				"",
 				"  Executing build process",
-				MatchRegexp(`    Installing Dotnet Core ASPNet \d+\.\d+\.\d+`),
+				MatchRegexp(`    Installing .NET Core ASPNet \d+\.\d+\.\d+`),
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
 				"  Configuring build environment",
@@ -118,7 +118,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 				cLogs, err := docker.Container.Logs.Execute(container2.ID)
 				Expect(err).NotTo(HaveOccurred())
 				return cLogs.String()
-			}).Should(ContainSubstring(`"name":"Dotnet Core ASPNet"`))
+			}).Should(ContainSubstring(`"name":".NET Core ASPNet"`))
 
 			// check that all required SBOM files are present
 			Expect(filepath.Join(sbomDir, "sbom", "launch", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "dotnet-core-aspnet", "sbom.cdx.json")).To(BeARegularFile())
@@ -128,7 +128,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			// check an SBOM file to make sure it has an entry for go
 			contents, err := os.ReadFile(filepath.Join(sbomDir, "sbom", "launch", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "dotnet-core-aspnet", "sbom.cdx.json"))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(contents)).To(ContainSubstring(`"name": "Dotnet Core ASPNet"`))
+			Expect(string(contents)).To(ContainSubstring(`"name": ".NET Core ASPNet"`))
 		})
 	})
 
@@ -169,16 +169,16 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(logs).To(ContainLines(
 				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
-				"  Resolving Dotnet Core ASPNet version",
+				"  Resolving .NET Core ASPNet version",
 				"    Candidate version sources (in priority order):",
 				MatchRegexp(`      RUNTIME_VERSION             -> "3\.1\.\d+"`),
 				"      BP_DOTNET_FRAMEWORK_VERSION -> \"3.1.*\"",
 				"      <unknown>                   -> \"\"",
 				"",
-				MatchRegexp(`    Selected Dotnet Core ASPNet version \(using RUNTIME_VERSION\): \d+\.\d+\.\d+`),
+				MatchRegexp(`    Selected .NET Core ASPNet version \(using RUNTIME_VERSION\): \d+\.\d+\.\d+`),
 				"",
 				"  Executing build process",
-				MatchRegexp(`    Installing Dotnet Core ASPNet 3\.1\.\d+`),
+				MatchRegexp(`    Installing .NET Core ASPNet 3\.1\.\d+`),
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
 				"  Configuring build environment",
