@@ -11,6 +11,8 @@ import (
 	"github.com/paketo-buildpacks/dotnet-core-aspnet/fakes"
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
+	"github.com/paketo-buildpacks/packit/v2/sbom"
+	"github.com/paketo-buildpacks/packit/v2/scribe"
 
 	//nolint Ignore SA1019, informed usage of deprecated package
 	"github.com/paketo-buildpacks/packit/v2/paketosbom"
@@ -30,6 +32,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		entryResolver     *fakes.EntryResolver
 		dependencyManager *fakes.DependencyManager
 		symlinker         *fakes.Symlinker
+		sbomGenerator     *fakes.SBOMGenerator
 		buffer            *bytes.Buffer
 
 		build packit.BuildFunc
@@ -76,10 +79,12 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		symlinker = &fakes.Symlinker{}
 
-		buffer = bytes.NewBuffer(nil)
-		logEmitter := dotnetcoreaspnet.NewLogEmitter(buffer)
+		sbomGenerator = &fakes.SBOMGenerator{}
+		sbomGenerator.GenerateFromDependencyCall.Returns.SBOM = sbom.SBOM{}
 
-		build = dotnetcoreaspnet.Build(entryResolver, dependencyManager, symlinker, logEmitter, chronos.DefaultClock)
+		buffer = bytes.NewBuffer(nil)
+
+		build = dotnetcoreaspnet.Build(entryResolver, dependencyManager, symlinker, sbomGenerator, scribe.NewEmitter(buffer), chronos.DefaultClock)
 	})
 
 	it.After(func() {
@@ -94,8 +99,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			CNBPath:    cnbDir,
 			Stack:      "some-stack",
 			BuildpackInfo: packit.BuildpackInfo{
-				Name:    "Some Buildpack",
-				Version: "some-version",
+				Name:        "Some Buildpack",
+				Version:     "some-version",
+				SBOMFormats: []string{sbom.CycloneDXFormat, sbom.SPDXFormat},
 			},
 			Platform: packit.Platform{Path: "platform"},
 			Plan: packit.BuildpackPlan{
@@ -113,24 +119,26 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(result).To(Equal(packit.BuildResult{
-			Layers: []packit.Layer{
-				{
-					Name: "dotnet-core-aspnet",
-					Path: filepath.Join(layersDir, "dotnet-core-aspnet"),
-					SharedEnv: packit.Environment{
-						"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
-					},
-					LaunchEnv:        packit.Environment{},
-					BuildEnv:         packit.Environment{},
-					ProcessLaunchEnv: map[string]packit.Environment{},
-					Build:            false,
-					Launch:           false,
-					Cache:            false,
-					Metadata: map[string]interface{}{
-						"dependency-sha": "",
-					},
-				},
+		Expect(result.Layers).To(HaveLen(1))
+		layer := result.Layers[0]
+
+		Expect(layer.Name).To(Equal("dotnet-core-aspnet"))
+		Expect(layer.Path).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
+		Expect(layer.SharedEnv).To(Equal(packit.Environment{
+			"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
+		}))
+		Expect(layer.Metadata).To(Equal(map[string]interface{}{
+			"dependency-sha": "",
+		}))
+
+		Expect(layer.SBOM.Formats()).To(Equal([]packit.SBOMFormat{
+			{
+				Extension: sbom.Format(sbom.CycloneDXFormat).Extension(),
+				Content:   sbom.NewFormattedReader(sbom.SBOM{}, sbom.CycloneDXFormat),
+			},
+			{
+				Extension: sbom.Format(sbom.SPDXFormat).Extension(),
+				Content:   sbom.NewFormattedReader(sbom.SBOM{}, sbom.SPDXFormat),
 			},
 		}))
 
@@ -154,6 +162,12 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(symlinker.LinkCall.CallCount).To(Equal(1))
 		Expect(symlinker.LinkCall.Receives.WorkingDir).To(Equal(workingDir))
 		Expect(symlinker.LinkCall.Receives.LayerPath).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
+
+		Expect(sbomGenerator.GenerateFromDependencyCall.Receives.Dependency).To(Equal(postal.Dependency{
+			ID:   "dotnet-aspnetcore",
+			Name: "Dotnet Core ASPNet",
+		}))
+		Expect(sbomGenerator.GenerateFromDependencyCall.Receives.Dir).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
 	})
 
 	context("when the 'RUNTIME_VERSION' env variable is set", func() {
@@ -189,25 +203,16 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(result).To(Equal(packit.BuildResult{
-				Layers: []packit.Layer{
-					{
-						Name: "dotnet-core-aspnet",
-						Path: filepath.Join(layersDir, "dotnet-core-aspnet"),
-						SharedEnv: packit.Environment{
-							"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
-						},
-						LaunchEnv:        packit.Environment{},
-						BuildEnv:         packit.Environment{},
-						ProcessLaunchEnv: map[string]packit.Environment{},
-						Build:            false,
-						Launch:           false,
-						Cache:            false,
-						Metadata: map[string]interface{}{
-							"dependency-sha": "",
-						},
-					},
-				},
+			Expect(result.Layers).To(HaveLen(1))
+			layer := result.Layers[0]
+
+			Expect(layer.Name).To(Equal("dotnet-core-aspnet"))
+			Expect(layer.Path).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
+			Expect(layer.SharedEnv).To(Equal(packit.Environment{
+				"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
+			}))
+			Expect(layer.Metadata).To(Equal(map[string]interface{}{
+				"dependency-sha": "",
 			}))
 
 			Expect(entryResolver.ResolveCall.Receives.BuildpackPlanEntrySlice).To(ContainElement(packit.BuildpackPlanEntry{
@@ -262,55 +267,44 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(result).To(Equal(packit.BuildResult{
-				Layers: []packit.Layer{
-					{
-						Name: "dotnet-core-aspnet",
-						Path: filepath.Join(layersDir, "dotnet-core-aspnet"),
-						SharedEnv: packit.Environment{
-							"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
-						},
-						LaunchEnv:        packit.Environment{},
-						BuildEnv:         packit.Environment{},
-						ProcessLaunchEnv: map[string]packit.Environment{},
-						Build:            true,
-						Launch:           true,
-						Cache:            true,
-						Metadata: map[string]interface{}{
-							"dependency-sha": "",
-						},
-					},
+			Expect(result.Layers).To(HaveLen(1))
+			layer := result.Layers[0]
+
+			Expect(layer.Name).To(Equal("dotnet-core-aspnet"))
+			Expect(layer.Path).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
+			Expect(layer.SharedEnv).To(Equal(packit.Environment{
+				"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
+			}))
+			Expect(layer.Metadata).To(Equal(map[string]interface{}{
+				"dependency-sha": "",
+			}))
+
+			Expect(layer.Build).To(BeTrue())
+			Expect(layer.Launch).To(BeTrue())
+			Expect(layer.Cache).To(BeTrue())
+
+			Expect(result.Build.BOM).To(HaveLen(1))
+			buildBOMEntry := result.Build.BOM[0]
+			Expect(buildBOMEntry.Name).To(Equal("dotnet-aspnetcore"))
+			Expect(buildBOMEntry.Metadata).To(Equal(paketosbom.BOMMetadata{
+				Version: "dotnet-aspnetcore-dep-version",
+				Checksum: paketosbom.BOMChecksum{
+					Algorithm: paketosbom.SHA256,
+					Hash:      "dotnet-aspnetcore-dep-sha",
 				},
-				Build: packit.BuildMetadata{
-					BOM: []packit.BOMEntry{
-						{
-							Name: "dotnet-aspnetcore",
-							Metadata: paketosbom.BOMMetadata{
-								Version: "dotnet-aspnetcore-dep-version",
-								Checksum: paketosbom.BOMChecksum{
-									Algorithm: paketosbom.SHA256,
-									Hash:      "dotnet-aspnetcore-dep-sha",
-								},
-								URI: "dotnet-aspnetcore-dep-uri",
-							},
-						},
-					},
+				URI: "dotnet-aspnetcore-dep-uri",
+			}))
+
+			Expect(result.Launch.BOM).To(HaveLen(1))
+			launchBOMEntry := result.Launch.BOM[0]
+			Expect(launchBOMEntry.Name).To(Equal("dotnet-aspnetcore"))
+			Expect(launchBOMEntry.Metadata).To(Equal(paketosbom.BOMMetadata{
+				Version: "dotnet-aspnetcore-dep-version",
+				Checksum: paketosbom.BOMChecksum{
+					Algorithm: paketosbom.SHA256,
+					Hash:      "dotnet-aspnetcore-dep-sha",
 				},
-				Launch: packit.LaunchMetadata{
-					BOM: []packit.BOMEntry{
-						{
-							Name: "dotnet-aspnetcore",
-							Metadata: paketosbom.BOMMetadata{
-								Version: "dotnet-aspnetcore-dep-version",
-								Checksum: paketosbom.BOMChecksum{
-									Algorithm: paketosbom.SHA256,
-									Hash:      "dotnet-aspnetcore-dep-sha",
-								},
-								URI: "dotnet-aspnetcore-dep-uri",
-							},
-						},
-					},
-				},
+				URI: "dotnet-aspnetcore-dep-uri",
 			}))
 		})
 	})
@@ -322,6 +316,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 			dependencyManager.ResolveCall.Returns.Dependency = postal.Dependency{
 				ID:     "dotnet-aspnetcore",
+				Name:   "Dotnet Core ASPNet",
 				SHA256: "some-sha",
 			}
 			entryResolver.MergeLayerTypesCall.Returns.Launch = false
@@ -351,43 +346,36 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Layers: packit.Layers{Path: layersDir},
 			})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(result).To(Equal(packit.BuildResult{
-				Layers: []packit.Layer{
-					{
-						Name:             "dotnet-core-aspnet",
-						Path:             filepath.Join(layersDir, "dotnet-core-aspnet"),
-						SharedEnv:        packit.Environment{},
-						LaunchEnv:        packit.Environment{},
-						BuildEnv:         packit.Environment{},
-						ProcessLaunchEnv: map[string]packit.Environment{},
-						Build:            true,
-						Launch:           false,
-						Cache:            true,
-						Metadata: map[string]interface{}{
-							"dependency-sha": "some-sha",
-						},
-					},
+
+			Expect(result.Layers).To(HaveLen(1))
+			layer := result.Layers[0]
+
+			Expect(layer.Name).To(Equal("dotnet-core-aspnet"))
+			Expect(layer.Path).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
+			Expect(layer.Metadata).To(Equal(map[string]interface{}{
+				"dependency-sha": "some-sha",
+			}))
+
+			Expect(layer.Build).To(BeTrue())
+			Expect(layer.Launch).To(BeFalse())
+			Expect(layer.Cache).To(BeTrue())
+
+			Expect(result.Build.BOM).To(HaveLen(1))
+			buildBOMEntry := result.Build.BOM[0]
+			Expect(buildBOMEntry.Name).To(Equal("dotnet-aspnetcore"))
+			Expect(buildBOMEntry.Metadata).To(Equal(paketosbom.BOMMetadata{
+				Version: "dotnet-aspnetcore-dep-version",
+				Checksum: paketosbom.BOMChecksum{
+					Algorithm: paketosbom.SHA256,
+					Hash:      "dotnet-aspnetcore-dep-sha",
 				},
-				Build: packit.BuildMetadata{
-					BOM: []packit.BOMEntry{
-						{
-							Name: "dotnet-aspnetcore",
-							Metadata: paketosbom.BOMMetadata{
-								Version: "dotnet-aspnetcore-dep-version",
-								Checksum: paketosbom.BOMChecksum{
-									Algorithm: paketosbom.SHA256,
-									Hash:      "dotnet-aspnetcore-dep-sha",
-								},
-								URI: "dotnet-aspnetcore-dep-uri",
-							},
-						},
-					},
-				},
+				URI: "dotnet-aspnetcore-dep-uri",
 			}))
 
 			Expect(dependencyManager.GenerateBillOfMaterialsCall.Receives.Dependencies).To(Equal([]postal.Dependency{
 				{
 					ID:     "dotnet-aspnetcore",
+					Name:   "Dotnet Core ASPNet",
 					SHA256: "some-sha",
 				},
 			}))
@@ -400,7 +388,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(buffer.String()).To(ContainSubstring("Some Buildpack some-version"))
 			Expect(buffer.String()).To(ContainSubstring("Resolving Dotnet Core ASPNet version"))
-			Expect(buffer.String()).To(ContainSubstring("Selected dotnet-aspnetcore version (using BP_DOTNET_FRAMEWORK_VERSION): "))
+			Expect(buffer.String()).To(ContainSubstring("Selected Dotnet Core ASPNet version (using BP_DOTNET_FRAMEWORK_VERSION): "))
 			Expect(buffer.String()).To(ContainSubstring("Reusing cached layer"))
 			Expect(buffer.String()).ToNot(ContainSubstring("Executing build process"))
 		})
@@ -442,12 +430,13 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(buffer.String()).To(ContainSubstring("Some Buildpack 0.1.2"))
 			Expect(buffer.String()).To(ContainSubstring("Resolving Dotnet Core ASPNet version"))
-			Expect(buffer.String()).To(ContainSubstring("Selected dotnet-aspnetcore version (using buildpack.yml): "))
+			Expect(buffer.String()).To(ContainSubstring("Selected Dotnet Core ASPNet version (using buildpack.yml): "))
 			// v1.0.0 because that's the next major after input version v0.1.2
 			Expect(buffer.String()).To(ContainSubstring("WARNING: Setting the .NET Framework version through buildpack.yml will be deprecated soon in Dotnet Core ASPNet Buildpack v1.0.0."))
 			Expect(buffer.String()).To(ContainSubstring("Please specify the version through the $BP_DOTNET_FRAMEWORK_VERSION environment variable instead. See docs for more information."))
 			Expect(buffer.String()).To(ContainSubstring("Executing build process"))
-			Expect(buffer.String()).To(ContainSubstring("Configuring environment"))
+			Expect(buffer.String()).To(ContainSubstring("Configuring build environment"))
+			Expect(buffer.String()).To(ContainSubstring("Configuring launch environment"))
 		})
 	})
 

@@ -10,6 +10,8 @@ import (
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
 	"github.com/paketo-buildpacks/packit/v2/postal"
+	"github.com/paketo-buildpacks/packit/v2/sbom"
+	"github.com/paketo-buildpacks/packit/v2/scribe"
 )
 
 //go:generate faux --interface EntryResolver --output fakes/entry_resolver.go
@@ -30,7 +32,19 @@ type Symlinker interface {
 	Link(workingDir, layerPath string) (Err error)
 }
 
-func Build(entries EntryResolver, dependencies DependencyManager, symlinker Symlinker, logger LogEmitter, clock chronos.Clock) packit.BuildFunc {
+//go:generate faux --interface SBOMGenerator --output fakes/sbom_generator.go
+type SBOMGenerator interface {
+	GenerateFromDependency(dependency postal.Dependency, dir string) (sbom.SBOM, error)
+}
+
+func Build(
+	entries EntryResolver,
+	dependencies DependencyManager,
+	symlinker Symlinker,
+	sbomGenerator SBOMGenerator,
+	logger scribe.Emitter,
+	clock chronos.Clock,
+) packit.BuildFunc {
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
 		logger.Process("Resolving Dotnet Core ASPNet version")
@@ -134,9 +148,28 @@ func Build(entries EntryResolver, dependencies DependencyManager, symlinker Syml
 		}
 
 		aspNetLayer.SharedEnv.Override("DOTNET_ROOT", filepath.Join(context.WorkingDir, ".dotnet_root"))
-		logger.Environment(aspNetLayer.SharedEnv)
+		logger.EnvironmentVariables(aspNetLayer)
 
 		err = symlinker.Link(context.WorkingDir, aspNetLayer.Path)
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		logger.GeneratingSBOM(aspNetLayer.Path)
+		var sbomContent sbom.SBOM
+		duration, err = clock.Measure(func() error {
+			sbomContent, err = sbomGenerator.GenerateFromDependency(dependency, aspNetLayer.Path)
+			return err
+		})
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		logger.Action("Completed in %s", duration.Round(time.Millisecond))
+		logger.Break()
+
+		logger.FormattingSBOM(context.BuildpackInfo.SBOMFormats...)
+		aspNetLayer.SBOM, err = sbomContent.InFormats(context.BuildpackInfo.SBOMFormats...)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}

@@ -29,23 +29,31 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 
 	context("when building a container with dotnet aspnet", func() {
 		var (
-			image     occam.Image
-			container occam.Container
-			name      string
-			source    string
+			image      occam.Image
+			container1 occam.Container
+			container2 occam.Container
+			name       string
+			source     string
+			sbomDir    string
 		)
 
 		it.Before(func() {
 			var err error
 			name, err = occam.RandomName()
 			Expect(err).NotTo(HaveOccurred())
+
+			sbomDir, err = os.MkdirTemp("", "sbom")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(os.Chmod(sbomDir, os.ModePerm)).To(Succeed())
 		})
 
 		it.After(func() {
-			Expect(docker.Container.Remove.Execute(container.ID)).To(Succeed())
+			Expect(docker.Container.Remove.Execute(container1.ID)).To(Succeed())
+			Expect(docker.Container.Remove.Execute(container2.ID)).To(Succeed())
 			Expect(docker.Image.Remove.Execute(image.ID)).To(Succeed())
 			Expect(docker.Volume.Remove.Execute(occam.CacheVolumeNames(name))).To(Succeed())
 			Expect(os.RemoveAll(source)).To(Succeed())
+			Expect(os.RemoveAll(sbomDir)).To(Succeed())
 		})
 
 		it("builds an oci image with aspnet dlls installed", func() {
@@ -61,6 +69,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					buildpack,
 					buildPlanBuildpack,
 				).
+				WithSBOMOutputDir(sbomDir).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
@@ -71,17 +80,20 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 				MatchRegexp(`      RUNTIME_VERSION -> "\d+\.\d+\.\d+"`),
 				"      <unknown>       -> \"\"",
 				"",
-				MatchRegexp(`    Selected dotnet-aspnetcore version \(using RUNTIME_VERSION\): \d+\.\d+\.\d+`),
+				MatchRegexp(`    Selected Dotnet Core ASPNet version \(using RUNTIME_VERSION\): \d+\.\d+\.\d+`),
 				"",
 				"  Executing build process",
 				MatchRegexp(`    Installing Dotnet Core ASPNet \d+\.\d+\.\d+`),
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
-				"  Configuring environment",
+				"  Configuring build environment",
+				`    DOTNET_ROOT -> "/workspace/.dotnet_root"`,
+				"",
+				"  Configuring launch environment",
 				`    DOTNET_ROOT -> "/workspace/.dotnet_root"`,
 			))
 
-			container, err = docker.Container.Run.
+			container1, err = docker.Container.Run.
 				WithCommand(
 					fmt.Sprintf(`test -f /layers/%s/dotnet-core-aspnet/shared/Microsoft.AspNetCore.App/*/Microsoft.AspNetCore.dll &&
 					test -f /workspace/.dotnet_root/shared/Microsoft.AspNetCore.App/*/Microsoft.AspNetCore.dll &&
@@ -92,10 +104,31 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() string {
-				cLogs, err := docker.Container.Logs.Execute(container.ID)
+				cLogs, err := docker.Container.Logs.Execute(container1.ID)
 				Expect(err).NotTo(HaveOccurred())
 				return cLogs.String()
 			}).Should(ContainSubstring("AspNetCore.dll exists"))
+
+			container2, err = docker.Container.Run.
+				WithCommand("cat /layers/sbom/launch/sbom.legacy.json").
+				Execute(image.ID)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(func() string {
+				cLogs, err := docker.Container.Logs.Execute(container2.ID)
+				Expect(err).NotTo(HaveOccurred())
+				return cLogs.String()
+			}).Should(ContainSubstring(`"name":"Dotnet Core ASPNet"`))
+
+			// check that all required SBOM files are present
+			Expect(filepath.Join(sbomDir, "sbom", "launch", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "dotnet-core-aspnet", "sbom.cdx.json")).To(BeARegularFile())
+			Expect(filepath.Join(sbomDir, "sbom", "launch", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "dotnet-core-aspnet", "sbom.spdx.json")).To(BeARegularFile())
+			Expect(filepath.Join(sbomDir, "sbom", "launch", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "dotnet-core-aspnet", "sbom.syft.json")).To(BeARegularFile())
+
+			// check an SBOM file to make sure it has an entry for go
+			contents, err := os.ReadFile(filepath.Join(sbomDir, "sbom", "launch", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "dotnet-core-aspnet", "sbom.cdx.json"))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(contents)).To(ContainSubstring(`"name": "Dotnet Core ASPNet"`))
 		})
 	})
 
@@ -142,13 +175,16 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 				"      BP_DOTNET_FRAMEWORK_VERSION -> \"3.1.*\"",
 				"      <unknown>                   -> \"\"",
 				"",
-				MatchRegexp(`    Selected dotnet-aspnetcore version \(using RUNTIME_VERSION\): \d+\.\d+\.\d+`),
+				MatchRegexp(`    Selected Dotnet Core ASPNet version \(using RUNTIME_VERSION\): \d+\.\d+\.\d+`),
 				"",
 				"  Executing build process",
 				MatchRegexp(`    Installing Dotnet Core ASPNet 3\.1\.\d+`),
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
-				"  Configuring environment",
+				"  Configuring build environment",
+				`    DOTNET_ROOT -> "/workspace/.dotnet_root"`,
+				"",
+				"  Configuring launch environment",
 				`    DOTNET_ROOT -> "/workspace/.dotnet_root"`,
 			))
 		})
