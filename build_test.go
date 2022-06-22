@@ -580,5 +580,42 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).To(MatchError("symlinker error"))
 			})
 		})
+
+		context("when generating the SBOM returns an error", func() {
+			it.Before(func() {
+				sbomGenerator.GenerateFromDependencyCall.Returns.Error = errors.New("failed to generate SBOM")
+			})
+
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					CNBPath: cnbDir,
+					Plan: packit.BuildpackPlan{
+						Entries: []packit.BuildpackPlanEntry{
+							{Name: "dotnet-aspnetcore"},
+						},
+					},
+					Layers: packit.Layers{Path: layersDir},
+					Stack:  "some-stack",
+				})
+				Expect(err).To(MatchError(ContainSubstring("failed to generate SBOM")))
+			})
+		})
+
+		context("when formatting the SBOM returns an error", func() {
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					BuildpackInfo: packit.BuildpackInfo{SBOMFormats: []string{"random-format"}},
+					CNBPath:       cnbDir,
+					Plan: packit.BuildpackPlan{
+						Entries: []packit.BuildpackPlanEntry{
+							{Name: "dotnet-aspnetcore"},
+						},
+					},
+					Layers: packit.Layers{Path: layersDir},
+					Stack:  "some-stack",
+				})
+				Expect(err).To(MatchError("unsupported SBOM format: 'random-format'"))
+			})
+		})
 	})
 }
