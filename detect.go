@@ -14,14 +14,7 @@ type VersionParser interface {
 
 func Detect(buildpackYMLParser VersionParser) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
-		var requirements = []packit.BuildPlanRequirement{
-			{
-				Name: "dotnet-runtime",
-				Metadata: map[string]interface{}{
-					"build": true,
-				},
-			},
-		}
+		var requirements []packit.BuildPlanRequirement
 
 		// check if BP_DOTNET_FRAMEWORK_VERSION is set
 		if version, ok := os.LookupEnv("BP_DOTNET_FRAMEWORK_VERSION"); ok {

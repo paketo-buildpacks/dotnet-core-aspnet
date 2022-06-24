@@ -1,12 +1,17 @@
 package dotnetcoreaspnet
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"time"
 
 	"github.com/Masterminds/semver"
+	"github.com/gravityblast/go-jsmin"
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
 	"github.com/paketo-buildpacks/packit/v2/postal"
@@ -30,33 +35,53 @@ type Symlinker interface {
 	Link(workingDir, layerPath string) (Err error)
 }
 
-func Build(entries EntryResolver, dependencies DependencyManager, symlinker Symlinker, logger LogEmitter, clock chronos.Clock) packit.BuildFunc {
+//go:generate faux --interface VersionResolver --output fakes/version_resolver.go
+type VersionResolver interface {
+	Resolve(path string, entry packit.BuildpackPlanEntry, stack string) (postal.Dependency, error)
+}
+
+func Build(entries EntryResolver, versionResolver VersionResolver, dependencies DependencyManager, symlinker Symlinker, logger LogEmitter, clock chronos.Clock) packit.BuildFunc {
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
 		logger.Process("Resolving Dotnet Core ASPNet version")
 
-		if v, ok := os.LookupEnv("RUNTIME_VERSION"); ok {
+		runtimeV, aspnetV, err := configParse(filepath.Join(context.WorkingDir, "*.runtimeconfig.json"))
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return packit.BuildResult{}, err
+		}
+
+		if aspnetV != "" {
 			context.Plan.Entries = append(context.Plan.Entries, packit.BuildpackPlanEntry{
 				Name: "dotnet-aspnetcore",
 				Metadata: map[string]interface{}{
-					"version":        v,
-					"version-source": "RUNTIME_VERSION",
+					"version":        aspnetV,
+					"version-source": "runtimeconfig.json ASP.NET",
+				},
+			})
+		}
+
+		if runtimeV != "" {
+			context.Plan.Entries = append(context.Plan.Entries, packit.BuildpackPlanEntry{
+				Name: "dotnet-aspnetcore",
+				Metadata: map[string]interface{}{
+					"version":        runtimeV,
+					"version-source": "runtimeconfig.json .NET Runtime",
 				},
 			})
 		}
 
 		priorities := []interface{}{
-			"RUNTIME_VERSION",
 			"BP_DOTNET_FRAMEWORK_VERSION",
 			"buildpack.yml",
 			regexp.MustCompile(`.*\.(cs)|(fs)|(vb)proj`),
+			"runtimeconfig.json ASP.NET",
+			"runtimeconfig.json .NET Runtime",
 			"runtimeconfig.json",
+			".NET Execute Buildpack",
 		}
 
 		entry, sortedEntries := entries.Resolve("dotnet-aspnetcore", context.Plan.Entries, priorities)
 		logger.Candidates(sortedEntries)
-
-		version, _ := entry.Metadata["version"].(string)
 
 		source, _ := entry.Metadata["version-source"].(string)
 		if source == "buildpack.yml" {
@@ -66,7 +91,13 @@ func Build(entries EntryResolver, dependencies DependencyManager, symlinker Syml
 			logger.Break()
 		}
 
-		dependency, err := dependencies.Resolve(filepath.Join(context.CNBPath, "buildpack.toml"), entry.Name, version, context.Stack)
+		if source == ".NET Execute Buildpack" {
+			logger.Subprocess("No version of ASP.NET requested. Skipping install.")
+
+			return packit.BuildResult{}, nil
+		}
+
+		dependency, err := versionResolver.Resolve(filepath.Join(context.CNBPath, "buildpack.toml"), entry, context.Stack)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
@@ -133,13 +164,8 @@ func Build(entries EntryResolver, dependencies DependencyManager, symlinker Syml
 			"dependency-sha": dependency.SHA256,
 		}
 
-		aspNetLayer.LaunchEnv.Override("DOTNET_ROOT", filepath.Join(context.WorkingDir, ".dotnet_root"))
+		aspNetLayer.SharedEnv.Override("DOTNET_ROOT", aspNetLayer.Path)
 		logger.Environment(aspNetLayer.SharedEnv)
-
-		err = symlinker.Link(context.WorkingDir, aspNetLayer.Path)
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
 
 		return packit.BuildResult{
 			Layers: []packit.Layer{aspNetLayer},
@@ -147,4 +173,89 @@ func Build(entries EntryResolver, dependencies DependencyManager, symlinker Syml
 			Launch: launchMetadata,
 		}, nil
 	}
+}
+
+type RuntimeConfig struct {
+	RuntimeVersion string
+	ASPNETVersion  string
+}
+
+type framework struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+}
+
+func configParse(glob string) (runtime, aspnet string, err error) {
+	files, err := filepath.Glob(glob)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to find *.runtimeconfig.json: %w: %q", err, glob)
+	}
+
+	if len(files) > 1 {
+		return "", "", fmt.Errorf("multiple *.runtimeconfig.json files present: %v", files)
+	}
+
+	if len(files) == 0 {
+		return "", "", fmt.Errorf("no *.runtimeconfig.json found: %w", os.ErrNotExist)
+	}
+
+	var data struct {
+		RuntimeOptions struct {
+			Framework  framework   `json:"framework"`
+			Frameworks []framework `json:"frameworks"`
+		} `json:"runtimeOptions"`
+	}
+
+	file, err := os.Open(files[0])
+	if err != nil {
+		return "", "", err
+	}
+	defer file.Close()
+
+	buffer := bytes.NewBuffer(nil)
+	err = jsmin.Min(file, buffer)
+	if err != nil {
+		return "", "", err
+	}
+
+	err = json.NewDecoder(buffer).Decode(&data)
+	if err != nil {
+		return "", "", err
+	}
+
+	switch data.RuntimeOptions.Framework.Name {
+	case "Microsoft.NETCore.App":
+		runtime = versionOrWildcard(data.RuntimeOptions.Framework.Version)
+	case "Microsoft.AspNetCore.App":
+		aspnet = versionOrWildcard(data.RuntimeOptions.Framework.Version)
+		runtime = aspnet
+	default:
+		runtime = ""
+		aspnet = ""
+	}
+
+	for _, f := range data.RuntimeOptions.Frameworks {
+		switch f.Name {
+		case "Microsoft.NETCore.App":
+			if runtime != "" {
+				return "", "", fmt.Errorf("malformed runtimeconfig.json: multiple '%s' frameworks specified", f.Name)
+			}
+			runtime = versionOrWildcard(f.Version)
+		case "Microsoft.AspNetCore.App":
+			if aspnet != "" {
+				return "", "", fmt.Errorf("malformed runtimeconfig.json: multiple '%s' frameworks specified", f.Name)
+			}
+			aspnet = versionOrWildcard(f.Version)
+		default:
+			continue
+		}
+	}
+	return runtime, aspnet, nil
+}
+
+func versionOrWildcard(version string) string {
+	if version == "" {
+		return "*"
+	}
+	return version
 }

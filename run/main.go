@@ -17,11 +17,13 @@ func main() {
 	entryResolver := draft.NewPlanner()
 	dependencyManager := postal.NewService(cargo.NewTransport())
 	dotnetRootLinker := dotnetcoreaspnet.NewDotnetRootLinker()
+	runtimeVersionResolver := dotnetcoreaspnet.NewRuntimeVersionResolver(logEmitter)
 
 	packit.Run(
 		dotnetcoreaspnet.Detect(buildpackYMLParser),
 		dotnetcoreaspnet.Build(
 			entryResolver,
+			runtimeVersionResolver,
 			dependencyManager,
 			dotnetRootLinker,
 			logEmitter,
