@@ -164,6 +164,11 @@ func Build(entries EntryResolver, versionResolver VersionResolver, dependencies 
 			"dependency-sha": dependency.SHA256,
 		}
 
+		logger.Process("Configuring environment")
+		aspNetLayer.LaunchEnv.Prepend("PATH",
+			aspNetLayer.Path,
+			string(os.PathListSeparator))
+
 		aspNetLayer.SharedEnv.Override("DOTNET_ROOT", aspNetLayer.Path)
 		logger.Environment(aspNetLayer.SharedEnv)
 
