@@ -1,7 +1,7 @@
 api = "0.8"
 
 [buildpack]
-  description = "A buildpack for installing the approriate .NET Core ASP.NET version"
+  description = "A buildpack for installing the appropriate .NET Core ASP.NET version"
   homepage = "https://github.com/paketo-buildpacks/dotnet-core-aspnet"
   id = "paketo-buildpacks/dotnet-core-aspnet"
   keywords = ["dotnet", "ASP.NET"]
