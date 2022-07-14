@@ -147,7 +147,7 @@ func Build(
 			"dependency-sha": dependency.SHA256,
 		}
 
-		aspNetLayer.SharedEnv.Override("DOTNET_ROOT", filepath.Join(context.WorkingDir, ".dotnet_root"))
+		aspNetLayer.LaunchEnv.Override("DOTNET_ROOT", filepath.Join(context.WorkingDir, ".dotnet_root"))
 		logger.EnvironmentVariables(aspNetLayer)
 
 		err = symlinker.Link(context.WorkingDir, aspNetLayer.Path)

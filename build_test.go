@@ -124,7 +124,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		Expect(layer.Name).To(Equal("dotnet-core-aspnet"))
 		Expect(layer.Path).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
-		Expect(layer.SharedEnv).To(Equal(packit.Environment{
+		Expect(layer.LaunchEnv).To(Equal(packit.Environment{
 			"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
 		}))
 		Expect(layer.Metadata).To(Equal(map[string]interface{}{
@@ -208,7 +208,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(layer.Name).To(Equal("dotnet-core-aspnet"))
 			Expect(layer.Path).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
-			Expect(layer.SharedEnv).To(Equal(packit.Environment{
+			Expect(layer.LaunchEnv).To(Equal(packit.Environment{
 				"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
 			}))
 			Expect(layer.Metadata).To(Equal(map[string]interface{}{
@@ -272,7 +272,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(layer.Name).To(Equal("dotnet-core-aspnet"))
 			Expect(layer.Path).To(Equal(filepath.Join(layersDir, "dotnet-core-aspnet")))
-			Expect(layer.SharedEnv).To(Equal(packit.Environment{
+			Expect(layer.LaunchEnv).To(Equal(packit.Environment{
 				"DOTNET_ROOT.override": filepath.Join(workingDir, ".dotnet_root"),
 			}))
 			Expect(layer.Metadata).To(Equal(map[string]interface{}{
@@ -435,7 +435,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Expect(buffer.String()).To(ContainSubstring("WARNING: Setting the .NET Framework version through buildpack.yml will be deprecated soon in .NET Core ASPNet Buildpack v1.0.0."))
 			Expect(buffer.String()).To(ContainSubstring("Please specify the version through the $BP_DOTNET_FRAMEWORK_VERSION environment variable instead. See docs for more information."))
 			Expect(buffer.String()).To(ContainSubstring("Executing build process"))
-			Expect(buffer.String()).To(ContainSubstring("Configuring build environment"))
 			Expect(buffer.String()).To(ContainSubstring("Configuring launch environment"))
 		})
 	})
