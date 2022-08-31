@@ -5,7 +5,7 @@ api = "0.8"
   homepage = "https://github.com/paketo-buildpacks/dotnet-core-aspnet"
   id = "paketo-buildpacks/dotnet-core-aspnet"
   keywords = ["dotnet", "ASP.NET"]
-  name = "Paketo ASP.NET Core Buildpack"
+  name = "Paketo Buildpack for ASP.NET Core"
   sbom-formats = ["application/vnd.cyclonedx+json", "application/spdx+json", "application/vnd.syft+json"]
 
   [[buildpack.licenses]]
