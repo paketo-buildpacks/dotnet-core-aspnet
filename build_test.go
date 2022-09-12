@@ -319,8 +319,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Name:   ".NET Core ASPNet",
 				SHA256: "some-sha",
 			}
-			entryResolver.MergeLayerTypesCall.Returns.Launch = false
-			entryResolver.MergeLayerTypesCall.Returns.Build = true
+			entryResolver.MergeLayerTypesCall.Returns.Launch = true
+			entryResolver.MergeLayerTypesCall.Returns.Build = false
 		})
 
 		it("exits build process early", func() {
@@ -356,14 +356,14 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				"dependency-sha": "some-sha",
 			}))
 
-			Expect(layer.Build).To(BeTrue())
-			Expect(layer.Launch).To(BeFalse())
+			Expect(layer.Build).To(BeFalse())
+			Expect(layer.Launch).To(BeTrue())
 			Expect(layer.Cache).To(BeTrue())
 
-			Expect(result.Build.BOM).To(HaveLen(1))
-			buildBOMEntry := result.Build.BOM[0]
-			Expect(buildBOMEntry.Name).To(Equal("dotnet-aspnetcore"))
-			Expect(buildBOMEntry.Metadata).To(Equal(paketosbom.BOMMetadata{
+			Expect(result.Launch.BOM).To(HaveLen(1))
+			launchBOMEntry := result.Launch.BOM[0]
+			Expect(launchBOMEntry.Name).To(Equal("dotnet-aspnetcore"))
+			Expect(launchBOMEntry.Metadata).To(Equal(paketosbom.BOMMetadata{
 				Version: "dotnet-aspnetcore-dep-version",
 				Checksum: paketosbom.BOMChecksum{
 					Algorithm: paketosbom.SHA256,

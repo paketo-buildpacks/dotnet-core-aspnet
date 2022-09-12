@@ -115,7 +115,7 @@ func Build(
 				return packit.BuildResult{}, err
 			}
 
-			aspNetLayer.Launch, aspNetLayer.Build, aspNetLayer.Cache = launch, build, build
+			aspNetLayer.Launch, aspNetLayer.Build, aspNetLayer.Cache = launch, build, launch || build
 
 			return packit.BuildResult{
 				Layers: []packit.Layer{aspNetLayer},
