@@ -163,7 +163,7 @@ func testLayerReuse(t *testing.T, context spec.G, it spec.S) {
 				)
 
 			firstImage, logs, err = build.WithEnv(map[string]string{
-				"BP_DOTNET_FRAMEWORK_VERSION": "3.*",
+				"BP_DOTNET_FRAMEWORK_VERSION": "7.*",
 			}).Execute(name, source)
 			Expect(err).NotTo(HaveOccurred())
 

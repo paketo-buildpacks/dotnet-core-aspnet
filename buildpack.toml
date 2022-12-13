@@ -17,34 +17,6 @@ api = "0.8"
   pre-package = "./scripts/build.sh"
 
   [[metadata.dependencies]]
-    cpe = "cpe:2.3:a:microsoft:asp.net_core:3.1:*:*:*:*:*:*:*"
-    deprecation_date = "2022-12-13T00:00:00Z"
-    id = "dotnet-aspnetcore"
-    licenses = ["MIT", "MIT-0"]
-    name = ".NET Core ASPNet"
-    purl = "pkg:generic/dotnet-aspnetcore@3.1.30?checksum=92e8e028d9a6094437a38ba2d3a7898436f027ccd2655ca52b2b0b27e42e3455&download_url=https://download.visualstudio.microsoft.com/download/pr/12f61df9-e5d2-4cc2-b992-80d30ee3fc43/0087f4e0b8b3a94effa890ee3ebba0b1/aspnetcore-runtime-3.1.30-linux-x64.tar.gz"
-    sha256 = "8832421ba6308e392ca9540a02ab3049fbeb74523d3403a1479808efe01624b0"
-    source = "https://download.visualstudio.microsoft.com/download/pr/12f61df9-e5d2-4cc2-b992-80d30ee3fc43/0087f4e0b8b3a94effa890ee3ebba0b1/aspnetcore-runtime-3.1.30-linux-x64.tar.gz"
-    source_sha256 = "92e8e028d9a6094437a38ba2d3a7898436f027ccd2655ca52b2b0b27e42e3455"
-    stacks = ["io.buildpacks.stacks.bionic"]
-    uri = "https://deps.paketo.io/dotnet-aspnetcore/dotnet-aspnetcore_3.1.30_linux_x64_bionic_8832421b.tar.xz"
-    version = "3.1.30"
-
-  [[metadata.dependencies]]
-    cpe = "cpe:2.3:a:microsoft:asp.net_core:3.1:*:*:*:*:*:*:*"
-    deprecation_date = "2022-12-13T00:00:00Z"
-    id = "dotnet-aspnetcore"
-    licenses = ["MIT", "MIT-0"]
-    name = ".NET Core ASPNet"
-    purl = "pkg:generic/dotnet-aspnetcore@3.1.31?checksum=0504d12d01a66f58d7d919f0af76957bcf6e997d2691a71ede83de079b7ab70c&download_url=https://download.visualstudio.microsoft.com/download/pr/2fc0069c-e99a-4296-99ee-a422b3cf50de/df8aee91eeaf50a12c810c3845341eb3/aspnetcore-runtime-3.1.31-linux-x64.tar.gz"
-    sha256 = "fe1b102f5b269e998630e330d00b6dc911e802b441d5d6d6fd4daa17e2a18aab"
-    source = "https://download.visualstudio.microsoft.com/download/pr/2fc0069c-e99a-4296-99ee-a422b3cf50de/df8aee91eeaf50a12c810c3845341eb3/aspnetcore-runtime-3.1.31-linux-x64.tar.gz"
-    source_sha256 = "0504d12d01a66f58d7d919f0af76957bcf6e997d2691a71ede83de079b7ab70c"
-    stacks = ["io.buildpacks.stacks.bionic"]
-    uri = "https://deps.paketo.io/dotnet-aspnetcore/dotnet-aspnetcore_3.1.31_linux_x64_bionic_fe1b102f.tar.xz"
-    version = "3.1.31"
-
-  [[metadata.dependencies]]
     cpe = "cpe:2.3:a:microsoft:asp.net_core:6.0:*:*:*:*:*:*:*"
     deprecation_date = "2024-11-12T00:00:00Z"
     id = "dotnet-aspnetcore"
@@ -85,11 +57,6 @@ api = "0.8"
     stacks = ["io.buildpacks.stacks.bionic", "io.buildpacks.stacks.jammy"]
     uri = "https://deps.paketo.io/dotnet-aspnetcore/dotnet-aspnetcore_7.0.0_linux_x64_bionic_4ed44c14.tar.xz"
     version = "7.0.0"
-
-  [[metadata.dependency-constraints]]
-    constraint = "3.1.*"
-    id = "dotnet-aspnetcore"
-    patches = 2
 
   [[metadata.dependency-constraints]]
     constraint = "6.0.*"
