@@ -153,7 +153,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					buildpack,
 					buildPlanBuildpack,
 				).
-				WithEnv(map[string]string{"BP_DOTNET_FRAMEWORK_VERSION": "3.1.*"}).
+				WithEnv(map[string]string{"BP_DOTNET_FRAMEWORK_VERSION": "7.0.*"}).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
@@ -161,14 +161,14 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
 				"  Resolving .NET Core ASPNet version",
 				"    Candidate version sources (in priority order):",
-				MatchRegexp(`      RUNTIME_VERSION             -> "3\.1\.\d+"`),
-				"      BP_DOTNET_FRAMEWORK_VERSION -> \"3.1.*\"",
+				MatchRegexp(`      RUNTIME_VERSION             -> "7\.0\.\d+"`),
+				"      BP_DOTNET_FRAMEWORK_VERSION -> \"7.0.*\"",
 				"      <unknown>                   -> \"\"",
 				"",
 				MatchRegexp(`    Selected .NET Core ASPNet version \(using RUNTIME_VERSION\): \d+\.\d+\.\d+`)))
 			Expect(logs).To(ContainLines(
 				"  Executing build process",
-				MatchRegexp(`    Installing .NET Core ASPNet 3\.1\.\d+`),
+				MatchRegexp(`    Installing .NET Core ASPNet 7\.0\.\d+`),
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
 				"  Configuring launch environment",
